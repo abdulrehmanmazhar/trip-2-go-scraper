@@ -5,6 +5,12 @@ export default [
         rules: {
             quotes: ['error', 'single', { allowTemplateLiterals: true }],
             '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }]
+        },
+        languageOptions: {
+            parserOptions: {
+                project: true,
+                tsconfigRootDir: import.meta.dirname
+            }
         }
     }
 ]

@@ -1,21 +1,22 @@
 import app from './app.js'
 import config from './config/config.js'
-import databaseService from './service/databaseService.js'
+// import databaseService from './service/databaseService.js'
 import logger from './util/logger.js'
 
 const server = app.listen(config.PORT)
 
 const main = async () => {
     try {
+        await new Promise((r) => setTimeout(r, 100))
         // Database connection
-        const connect = await databaseService.connect()
+        // const connect = await databaseService.connect()
 
-        logger.info(`DATABASE CONNECTED`, {
-            meta: {
-                DATABASE_NAME: connect,
-                TYPE: 'mongodb'
-            }
-        })
+        // logger.info(`DATABASE CONNECTED`, {
+        //     meta: {
+        //         DATABASE_NAME: connect,
+        //         TYPE: 'mongodb'
+        //     }
+        // })
 
         logger.info(`APPLICATION STARTED`, {
             meta: {

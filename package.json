@@ -39,6 +39,7 @@
         "packages/shared-utils",
         "packages/trip-theme",
         "apps/network-recorder",
-        "apps/dump-analyzer"
+        "apps/dump-analyzer",
+        "apps/dump-analyzer-client"
     ]
 }

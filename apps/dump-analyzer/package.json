@@ -20,8 +20,8 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "dist": "tsc -b",
-        "start": "node .",
-        "dev": "tsx watch src/server.ts"
+        "start": "cross-env NODE_ENV=production node .",
+        "dev": "cross-env NODE_ENV=development tsx watch src/server.ts"
     },
     "keywords": [],
     "author": "",
