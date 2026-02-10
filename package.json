@@ -40,6 +40,8 @@
         "packages/trip-theme",
         "apps/network-recorder",
         "apps/dump-analyzer",
-        "apps/dump-analyzer-client"
+        "apps/dump-analyzer-client",
+        "apps/workflow-recorder",
+        "apps/google-account-creator"
     ]
 }

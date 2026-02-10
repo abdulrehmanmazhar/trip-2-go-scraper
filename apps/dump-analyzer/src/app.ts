@@ -4,12 +4,13 @@ import router from './router/apiRouter.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
 import responseMessage from './constant/responseMessage.js'
 import httpError from './util/httpError.js'
-
+import cors from 'cors'
 const app: Application = express()
 
 // Middleware
 app.use(express.json())
 app.use(express.static(path.join(import.meta.dirname, '../', 'public')))
+app.use(cors())
 
 // Routes
 app.use('/api/v1', router)
