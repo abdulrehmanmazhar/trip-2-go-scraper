@@ -136,7 +136,6 @@ const filterDump = async (url: string, filters: FilterRequestInterface): Promise
 }
 
 export default function App() {
-    // dummy placeholders — YOU will replace logic
     const [search, setSearch] = useState('')
     const [index, setIndex] = useState(0)
     const [type, setType] = useState<FilterRequestInterface['type']>('all' as const)
@@ -155,7 +154,7 @@ export default function App() {
             setLoading(true)
             filterDump('http://localhost:3000/api/v1/filter_dump', {
                 search,
-                index,
+                index: 0,
                 type,
                 timestampSort
             }).then((r) => {
