@@ -1,30 +1,27 @@
-import { BrowserRouter as Routing } from 'react-router-dom'
+import { BrowserRouter } from 'react-router-dom'
 import AppRouter from './router/app'
 import ShadcnSidebarLayout from './components/features/shadcn-sidebar-layout'
 import { ThemeProvider } from './components/features/theme-provider'
-// import Otp from './pages/Otp'
-// import Signup from './pages/Signup'
-// import ForgotPassword from './pages/ForgotPassword'
-// import ResetPassword from './pages/ResetPassword'
-// import Login from './pages/Login'
-// import { useCheckLogin } from './hooks/use-check-login'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
+import ForgotPassword from './pages/ForgotPassword'
+import Otp from './pages/Otp'
+
 function App() {
-    // const { refreshLoginTimestamp, isLoggedIn } = useCheckLogin()
+    console.log('app rendered')
+
     return (
-        <>
-            <ThemeProvider>
-                <Routing>
-                    <ShadcnSidebarLayout>
-                        <AppRouter />
-                    </ShadcnSidebarLayout>
-                </Routing>
-                {/* <Otp /> */}
+        <ThemeProvider>
+            <BrowserRouter>
+                <ShadcnSidebarLayout>
+                    <AppRouter />
+                </ShadcnSidebarLayout>
+                {/* <Login /> */}
                 {/* <Signup /> */}
                 {/* <ForgotPassword /> */}
-                {/* <ResetPassword /> */}
-                {/* <Login /> */}
-            </ThemeProvider>
-        </>
+                {/* <Otp /> */}
+            </BrowserRouter>
+        </ThemeProvider>
     )
 }
 

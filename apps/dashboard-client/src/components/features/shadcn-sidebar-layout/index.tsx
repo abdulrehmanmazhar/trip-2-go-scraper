@@ -7,7 +7,7 @@ export default function ShadcnSidebarLayout({ children }: { children: React.Reac
         <SidebarProvider>
             <AppSidebar />
 
-            <main className="relative flex h-screen w-full flex-col">
+            <main className="relative flex h-screen w-full flex-col min-w-0">
                 <SidebarTrigger className="fixed" />
 
                 <div className="flex-1">{children}</div>

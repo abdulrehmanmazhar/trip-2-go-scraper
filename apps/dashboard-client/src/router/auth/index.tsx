@@ -1,5 +1,6 @@
 import ForgotPassword from '@/pages/ForgotPassword'
 import Login from '@/pages/Login'
+import NotFound from '@/pages/NotFound'
 import Otp from '@/pages/Otp'
 import ResetPassword from '@/pages/ResetPassword'
 import Signup from '@/pages/Signup'
@@ -29,6 +30,10 @@ function AuthRouter({}: Props) {
             <Route
                 path="/otp"
                 element={<Otp />}
+            />
+            <Route
+                path="*"
+                element={<NotFound />}
             />
         </Routes>
     )

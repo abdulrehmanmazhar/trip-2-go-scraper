@@ -25,7 +25,7 @@ function AppRouter({}: Props) {
                 element={<LiveActivity />}
             />
             <Route
-                path="/Bots"
+                path="/bots"
                 element={<Bots />}
             />
             <Route
