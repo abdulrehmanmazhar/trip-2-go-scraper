@@ -6,16 +6,19 @@
     "main": "dist/server.js",
     "devDependencies": {
         "@types/cors": "^2.8.19",
+        "@types/jsonwebtoken": "^9.0.10",
         "eslint-config": "^1.0.0",
         "ts-config": "^1.0.0"
     },
     "dependencies": {
+        "bcryptjs": "^3.0.3",
         "colorette": "^2.0.20",
         "cors": "^2.8.6",
         "cross-env": "^10.1.0",
         "dotenv-flow": "^4.1.0",
         "express": "^5.2.1",
-        "mongoose": "^9.1.5",
+        "jsonwebtoken": "^9.0.3",
+        "mongoose": "^9.2.1",
         "winston": "^3.19.0",
         "winston-mongodb": "^7.0.1"
     },
