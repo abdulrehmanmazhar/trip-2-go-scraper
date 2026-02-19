@@ -13,7 +13,7 @@ import { Route, Routes } from 'react-router-dom'
 
 type Props = {}
 
-function AppRouter({}: Props) {
+function AdminAppRouter({}: Props) {
     return (
         <Routes>
             <Route
@@ -45,10 +45,6 @@ function AppRouter({}: Props) {
                 element={<ClientData />}
             />
             <Route
-                path="*"
-                element={<NotFound />}
-            />
-            <Route
                 path="/terms"
                 element={<TermsAndConditions />}
             />
@@ -60,8 +56,12 @@ function AppRouter({}: Props) {
                 path="/about"
                 element={<AboutDeveloper />}
             />
+            <Route
+                path="*"
+                element={<NotFound />}
+            />
         </Routes>
     )
 }
 
-export default AppRouter
+export default AdminAppRouter

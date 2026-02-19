@@ -1,8 +1,9 @@
 import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldGroup, FieldLabel, FieldSeparator } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import constants from '@/constants'
+import constants, { ROUTES } from '@/constants'
 import { cn } from '@/lib/utils'
+import { Link } from 'react-router-dom'
 
 export function SignupForm({ className, ...props }: React.ComponentProps<'div'>) {
     return (
@@ -19,7 +20,14 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'div'>)
                         />
                         <h1 className="text-xl font-bold">Create your {constants.NAME} account</h1>
                         <FieldDescription>
-                            Already have an account? <a href="/login">Login</a>
+                            Already have an account?{' '}
+                            <Link to={ROUTES.LOGIN}>
+                                <span
+                                    // href="/forgot-password"
+                                    className="text-sm text-muted-foreground hover:underline cursor-pointer">
+                                    Login
+                                </span>
+                            </Link>
                         </FieldDescription>
                     </div>
 

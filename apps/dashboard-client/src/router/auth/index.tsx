@@ -4,6 +4,7 @@ import NotFound from '@/pages/NotFound'
 import Otp from '@/pages/Otp'
 import ResetPassword from '@/pages/ResetPassword'
 import Signup from '@/pages/Signup'
+import UnAuthorized from '@/pages/UnAuthorized'
 import { Route, Routes } from 'react-router-dom'
 
 type Props = {}
@@ -30,6 +31,10 @@ function AuthRouter({}: Props) {
             <Route
                 path="/otp"
                 element={<Otp />}
+            />
+            <Route
+                path="/unauthorized"
+                element={<UnAuthorized />}
             />
             <Route
                 path="*"

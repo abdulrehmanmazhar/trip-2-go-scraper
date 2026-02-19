@@ -11,8 +11,13 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
             {...props}>
             <form>
                 <FieldGroup>
-                    <div className="text-center">
-                        <h1 className="text-xl font-bold">Set new password</h1>
+                    <div className="flex flex-col items-center gap-2 text-center">
+                        <img
+                            src={constants.LOGO_SRC}
+                            alt={constants.NAME}
+                            className="h-8 w-8 object-contain"
+                        />
+                        <h1 className="text-xl font-bold">Set {constants.NAME} account new password</h1>
                         <FieldDescription>Choose a strong password you don’t reuse elsewhere.</FieldDescription>
                     </div>
 

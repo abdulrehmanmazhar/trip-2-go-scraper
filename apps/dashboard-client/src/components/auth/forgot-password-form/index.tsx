@@ -1,8 +1,9 @@
 import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import constants from '@/constants'
+import constants, { ROUTES } from '@/constants'
 import { cn } from '@/lib/utils'
+import { Link } from 'react-router-dom'
 
 export function ForgotPasswordForm({ className, ...props }: React.ComponentProps<'div'>) {
     return (
@@ -11,8 +12,13 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
             {...props}>
             <form>
                 <FieldGroup>
-                    <div className="text-center">
-                        <h1 className="text-xl font-bold">Forgot password?</h1>
+                    <div className="flex flex-col items-center gap-2 text-center">
+                        <img
+                            src={constants.LOGO_SRC}
+                            alt={constants.NAME}
+                            className="h-8 w-8 object-contain"
+                        />
+                        <h1 className="text-xl font-bold">Forgot {constants.NAME} account password</h1>
                         <FieldDescription>We’ll send you a reset link.</FieldDescription>
                     </div>
 
@@ -33,7 +39,14 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
                     </Button>
 
                     <FieldDescription className="text-center">
-                        <a href="/login">Back to login</a>
+                        {/* <a href="/login">Back to login</a> */}
+                        <Link to={ROUTES.LOGIN}>
+                            <span
+                                // href="/forgot-password"
+                                className="text-sm text-muted-foreground hover:underline cursor-pointer">
+                                Back to login
+                            </span>
+                        </Link>
                     </FieldDescription>
                 </FieldGroup>
             </form>

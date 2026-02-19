@@ -42,8 +42,13 @@ export function OtpForm({ className, ...props }: React.ComponentProps<'div'>) {
             {...props}>
             <form>
                 <FieldGroup>
-                    <div className="text-center">
-                        <h1 className="text-xl font-bold">Verify your email</h1>
+                    <div className="flex flex-col items-center gap-2 text-center">
+                        <img
+                            src={constants.LOGO_SRC}
+                            alt={constants.NAME}
+                            className="h-8 w-8 object-contain"
+                        />
+                        <h1 className="text-xl font-bold">Verify your {constants.NAME} account</h1>
                         <FieldDescription>Enter the 6-digit code sent to your email</FieldDescription>
                     </div>
 

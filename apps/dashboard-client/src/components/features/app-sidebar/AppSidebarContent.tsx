@@ -34,6 +34,7 @@ import {
     SidebarMenuButton
 } from '@/components/ui/sidebar'
 import { Link } from 'react-router-dom'
+import { ROUTES } from '@/constants'
 
 export function AppSidebarContent() {
     return (
@@ -44,7 +45,7 @@ export function AppSidebarContent() {
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
-                            <Link to={'/'}>
+                            <Link to={ROUTES.ADMIN.DASHBOARD}>
                                 <SidebarMenuButton>
                                     <LayoutDashboard />
                                     <span>Dashboard</span>
@@ -53,7 +54,7 @@ export function AppSidebarContent() {
                         </SidebarMenuItem>
 
                         <SidebarMenuItem>
-                            <Link to={'/live-activity'}>
+                            <Link to={ROUTES.ADMIN.LIVE_ACTIVITY}>
                                 <SidebarMenuButton>
                                     <Activity />
                                     <span>Live Activity</span>
@@ -62,7 +63,7 @@ export function AppSidebarContent() {
                         </SidebarMenuItem>
 
                         <SidebarMenuItem>
-                            <Link to={'/bots'}>
+                            <Link to={ROUTES.ADMIN.BOTS}>
                                 <SidebarMenuButton>
                                     <Bot />
                                     <span>Bots</span>
@@ -100,7 +101,7 @@ export function AppSidebarContent() {
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
-                            <Link to={'/workflows'}>
+                            <Link to={ROUTES.ADMIN.WORKFLOWS}>
                                 <SidebarMenuButton>
                                     <Workflow />
                                     <span>Workflows</span>
@@ -109,7 +110,7 @@ export function AppSidebarContent() {
                         </SidebarMenuItem>
 
                         <SidebarMenuItem>
-                            <Link to={'/workflow-builder'}>
+                            <Link to={ROUTES.ADMIN.WORKFLOW_BUILDER}>
                                 <SidebarMenuButton>
                                     <Wand2 />
                                     <span>Workflow Builder</span>
@@ -146,7 +147,7 @@ export function AppSidebarContent() {
                         </SidebarMenuItem>
 
                         <SidebarMenuItem>
-                            <Link to={'/clients'}>
+                            <Link to={ROUTES.ADMIN.CLIENTS}>
                                 <SidebarMenuButton>
                                     <Users />
                                     <span>Clients</span>
@@ -155,7 +156,7 @@ export function AppSidebarContent() {
                         </SidebarMenuItem>
 
                         <SidebarMenuItem>
-                            <Link to={'/client-data'}>
+                            <Link to={ROUTES.ADMIN.CLIENT_DATA}>
                                 <SidebarMenuButton>
                                     <Database />
                                     <span>Client Data</span>
@@ -236,7 +237,7 @@ export function AppSidebarContent() {
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
-                            <Link to={'/about'}>
+                            <Link to={ROUTES.ADMIN.ABOUT}>
                                 <SidebarMenuButton>
                                     <Info className="h-4 w-4" />
                                     <span>About FIGGO DEV</span>
@@ -245,7 +246,7 @@ export function AppSidebarContent() {
                         </SidebarMenuItem>
 
                         <SidebarMenuItem>
-                            <Link to={'/terms'}>
+                            <Link to={ROUTES.ADMIN.TERMS}>
                                 <SidebarMenuButton>
                                     <FileText className="h-4 w-4" />
                                     <span>Terms & Conditions</span>
@@ -254,7 +255,7 @@ export function AppSidebarContent() {
                         </SidebarMenuItem>
 
                         <SidebarMenuItem>
-                            <Link to={'/privacy'}>
+                            <Link to={ROUTES.ADMIN.PRIVACY}>
                                 <SidebarMenuButton>
                                     <ShieldCheck className="h-4 w-4" />
                                     <span>Privacy Policy</span>

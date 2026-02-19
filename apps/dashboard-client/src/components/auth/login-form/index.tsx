@@ -2,7 +2,8 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldGroup, FieldLabel, FieldSeparator } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import constants from '@/constants'
+import constants, { ROUTES } from '@/constants'
+import { Link } from 'react-router-dom'
 
 export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) {
     return (
@@ -19,7 +20,14 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                         />
                         <h1 className="text-xl font-bold">Welcome to {constants.NAME}</h1>
                         <FieldDescription>
-                            Don&apos;t have an account? <a href="/signup">Sign up</a>
+                            Don&apos;t have an account?{' '}
+                            <Link to={ROUTES.SIGNUP}>
+                                <span
+                                    // href="/forgot-password"
+                                    className="text-sm text-muted-foreground hover:underline cursor-pointer">
+                                    Sign up
+                                </span>
+                            </Link>
                         </FieldDescription>
                     </div>
 
@@ -36,11 +44,13 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                     <Field>
                         <div className="flex items-center justify-between">
                             <FieldLabel htmlFor="password">Password</FieldLabel>
-                            <a
-                                href="/forgot-password"
-                                className="text-sm text-muted-foreground hover:underline">
-                                Forgot password?
-                            </a>
+                            <Link to={ROUTES.FORGOT_PASSWORD}>
+                                <span
+                                    // href="/forgot-password"
+                                    className="text-sm text-muted-foreground hover:underline cursor-pointer">
+                                    Forgot password?
+                                </span>
+                            </Link>
                         </div>
                         <Input
                             id="password"
