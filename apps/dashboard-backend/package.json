@@ -12,6 +12,7 @@
     },
     "dependencies": {
         "bcryptjs": "^3.0.3",
+        "cloudinary": "^2.9.0",
         "colorette": "^2.0.20",
         "cors": "^2.8.6",
         "cross-env": "^10.1.0",

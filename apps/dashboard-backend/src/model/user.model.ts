@@ -13,7 +13,7 @@ export interface IUser extends Document {
         public_id: string
         url: string
     }
-    role: 'Admin' | 'User'
+    role: 'admin' | 'user'
     isVerified: boolean
     routes: string[]
     comparePassword(password: string): Promise<boolean>
@@ -64,10 +64,10 @@ const userSchema: Schema<IUser, UserModel> = new mongoose.Schema(
         role: {
             type: String,
             enum: {
-                values: ['User', 'Admin'],
+                values: ['user', 'admin'],
                 message: 'User role must be either Admin or User'
             },
-            default: 'User'
+            default: 'user'
         },
         isVerified: {
             type: Boolean,

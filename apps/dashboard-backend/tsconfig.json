@@ -3,6 +3,9 @@
     "include": ["src/**/*.ts"],
     "compilerOptions": {
         "rootDir": "./src",
-        "outDir": "./dist"
+        "outDir": "./dist",
+        "esModuleInterop": true,
+        "skipLibCheck": false,
+        "strict": true
     }
 }
