@@ -2,12 +2,38 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
-import constants from '@/constants'
+import constants, { APIS, ROUTES } from '@/constants'
+import type { THttpResponse } from '@/types'
+import { useNavigate } from 'react-router-dom'
+
+const verifyUser = async ({ activation_token, activation_code }: { activation_token: string; activation_code: string }) => {
+    const result = await fetch(
+        `${constants.BACKEND_LINK}${constants.API_VERSION}${APIS.OTP}`,
+
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json' // *HEADER* for JSON data
+            },
+            body: JSON.stringify({ activation_token, activation_code })
+        }
+    )
+
+    const data = await result.json()
+
+    if (!result.ok) {
+        throw new Error(data.message || 'Verification failed')
+    }
+
+    return data as THttpResponse
+}
 
 export function OtpForm({ className, ...props }: React.ComponentProps<'div'>) {
     const length = 6
     const [otp, setOtp] = React.useState<string[]>(Array(length).fill(''))
     const inputsRef = React.useRef<(HTMLInputElement | null)[]>([])
+
+    const navigate = useNavigate()
 
     const handleChange = (value: string, index: number) => {
         if (!/^\d*$/.test(value)) return
@@ -33,6 +59,17 @@ export function OtpForm({ className, ...props }: React.ComponentProps<'div'>) {
         if (data.length === length) {
             setOtp(data.split(''))
             inputsRef.current[length - 1]?.focus()
+        }
+    }
+
+    const verify = async (e: any) => {
+        try {
+            e.preventDefault()
+            const activation_token = sessionStorage.getItem('token') as string
+            await verifyUser({ activation_token, activation_code: otp.join('') })
+            navigate(ROUTES.LOGIN)
+        } catch (error) {
+            console.error(error)
         }
     }
 
@@ -75,7 +112,8 @@ export function OtpForm({ className, ...props }: React.ComponentProps<'div'>) {
 
                     <Button
                         type="submit"
-                        className="w-full">
+                        className="w-full"
+                        onClick={verify}>
                         Verify
                     </Button>
 

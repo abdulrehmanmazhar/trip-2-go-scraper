@@ -6,12 +6,14 @@ import globalErrorHandler from './middleware/globalErrorHandler.js'
 import responseMessage from './constant/responseMessage.js'
 import httpError from './util/httpError.js'
 import cors from 'cors'
+import cookieParser from 'cookie-parser'
 const app: Application = express()
 
 // Middleware
 app.use(express.json())
 app.use(express.static(path.join(import.meta.dirname, '../', 'public')))
-app.use(cors())
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }))
+app.use(cookieParser())
 
 // Routes
 app.use('/api/v1', router, userRouter)

@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { CalendarDays, Plus, Search, Filter } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
+import { ROUTES } from '@/constants'
 
 // -----------------------------
 // Types
@@ -182,10 +184,12 @@ export default function UserApplications() {
                         <p className="text-muted-foreground mt-1">Track your visa applications, payments and appointment status.</p>
                     </div>
 
-                    <Button className="rounded-2xl shadow-md">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Create New Application
-                    </Button>
+                    <Link to={ROUTES.USER.APPOINTMENT}>
+                        <Button className="rounded-2xl shadow-md">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Create New Application
+                        </Button>
+                    </Link>
                 </div>
 
                 {/* Filters */}

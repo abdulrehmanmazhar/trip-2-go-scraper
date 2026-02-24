@@ -16,29 +16,47 @@ const accessTokenExpire = parseInt(config.ACCESS_TOKEN_EXPIRE || '300', 10)
 const refreshTokenExpire = parseInt(config.REFRESH_TOKEN_EXPIRE || '1200', 10)
 
 // options for cookies
+// export const accessTokenOptions: ITokenOptions = {
+//     expires: new Date(Date.now() + accessTokenExpire + 1000 * 60 * 60),
+//     maxAge: accessTokenExpire + 60 * 60 * 1000,
+//     httpOnly: true,
+//     sameSite: 'lax',
+//     secure: true
+// }
+
+// export const refreshTokenOptions: ITokenOptions = {
+//     expires: new Date(Date.now() + refreshTokenExpire + 1000 * 60 * 60 * 24),
+//     maxAge: accessTokenExpire + 60 * 60 * 24 * 1000,
+//     httpOnly: true,
+//     sameSite: 'lax',
+//     secure: true
+// }
+
+const isProduction = config.ENV === 'production'
+
 export const accessTokenOptions: ITokenOptions = {
-    expires: new Date(Date.now() + accessTokenExpire + 1000 * 60 * 60),
-    maxAge: accessTokenExpire + 60 * 60 * 1000,
+    expires: new Date(Date.now() + accessTokenExpire * 1000),
+    maxAge: accessTokenExpire * 1000,
     httpOnly: true,
-    sameSite: 'none',
-    secure: true
+    sameSite: isProduction ? 'none' : 'lax',
+    secure: isProduction
 }
 
 export const refreshTokenOptions: ITokenOptions = {
-    expires: new Date(Date.now() + refreshTokenExpire + 1000 * 60 * 60 * 24),
-    maxAge: accessTokenExpire + 60 * 60 * 24 * 1000,
+    expires: new Date(Date.now() + refreshTokenExpire * 1000),
+    maxAge: refreshTokenExpire * 1000,
     httpOnly: true,
-    sameSite: 'none',
-    secure: true
+    sameSite: isProduction ? 'none' : 'lax',
+    secure: isProduction
 }
 
 export const sendToken = (user: IUser, statusCode: number, req: Request, res: Response) => {
     const accessToken = user.signAccessToken()
     const refreshToken = user.signRefreshToken()
 
-    if (config.ENV === 'production') {
-        accessTokenOptions.secure = true
-    }
+    // if (config.ENV === 'production') {
+    //     accessTokenOptions.secure = true
+    // }
 
     res.cookie('access_token', accessToken, accessTokenOptions)
     res.cookie('refresh_token', refreshToken, refreshTokenOptions)

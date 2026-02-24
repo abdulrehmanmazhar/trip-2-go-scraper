@@ -38,7 +38,7 @@ export const registrationUser = async (req: Request, res: Response, next: NextFu
 
         const activationCode = activationToken.activationCode
 
-        const data = { user: { name: user.name }, activationCode }
+        const data = { user: { name: user.name }, activationCode, activationLink: `${config.SERVER_URL}/activate-user/${activationCode}` }
 
         try {
             await emailService.sendEmail({
@@ -53,7 +53,7 @@ export const registrationUser = async (req: Request, res: Response, next: NextFu
             //     activationToken: activationToken.token
             // })
 
-            httpResponse(req, res, 200, responseMessage.SUCCESS, { activationToken })
+            httpResponse(req, res, 200, responseMessage.SUCCESS, { activationToken: activationToken.token })
         } catch (error) {
             return httpError(next, error as Error, req, 400)
         }
@@ -68,7 +68,9 @@ interface IActivationToken {
 }
 
 export const createActivationToken = (user: RegistrationBody): IActivationToken => {
-    const activationCode = Math.floor(1000 + Math.random() * 9000).toString()
+    const activationCode = Math.floor(Math.random() * 1_000_000)
+        .toString()
+        .padStart(6, '0')
 
     const token = Jwt.sign(
         {
@@ -148,6 +150,8 @@ export const LoginUser = async (req: Request, res: Response, next: NextFunction)
         if (!isPasswordMatch) {
             return httpError(next, new Error('Invalid email or password'), req, 400)
         }
+
+        user.password = undefined as unknown as string
 
         sendToken(user, 200, req, res)
     } catch (error) {
@@ -320,6 +324,7 @@ export const updatePassword = async (req: Request, res: Response, next: NextFunc
 interface IUpdateProfilePicture {
     avatar: string
 }
+
 export const updateProfilePicture = async (req: Request, res: Response, next: NextFunction) => {
     const { avatar } = req.body as IUpdateProfilePicture
 
