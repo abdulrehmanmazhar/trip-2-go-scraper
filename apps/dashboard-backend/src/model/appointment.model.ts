@@ -5,10 +5,11 @@ export interface IAppointment extends Document {
     abbr: string
     code: number
     consulate: mongoose.Types.ObjectId
-    type: 'parent' | 'child'
+    type: 'parent' | 'first-child'
     parentId: null | mongoose.Types.ObjectId
     price: mongoose.Types.ObjectId
     availableSlotsUTC: Date[]
+    platform: 'VFS' | 'TLS'
     fetchedAt: Date
 }
 
@@ -36,7 +37,7 @@ const AppointmentSchema = new Schema<IAppointment>(
         type: {
             type: String,
             enum: {
-                values: ['parent', 'child'],
+                values: ['parent', 'first-child'],
                 message: 'Appointment status must be either Booked or Not Booked'
             },
             default: 'parent',
@@ -56,6 +57,14 @@ const AppointmentSchema = new Schema<IAppointment>(
         availableSlotsUTC: {
             type: [Date],
             default: []
+        },
+        platform: {
+            type: String,
+            enum: {
+                values: ['VFS', 'TLS'],
+                message: 'Platform must be either VFS or TLS'
+            },
+            required: [true, 'Platform is required']
         },
         fetchedAt: {
             type: Date,

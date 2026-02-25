@@ -5,6 +5,8 @@ import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui
 import constants, { APIS, ROUTES } from '@/constants'
 import type { THttpResponse } from '@/types'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
+import { Spinner } from '@/components/ui/spinner'
 
 const verifyUser = async ({ activation_token, activation_code }: { activation_token: string; activation_code: string }) => {
     const result = await fetch(
@@ -32,6 +34,8 @@ export function OtpForm({ className, ...props }: React.ComponentProps<'div'>) {
     const length = 6
     const [otp, setOtp] = React.useState<string[]>(Array(length).fill(''))
     const inputsRef = React.useRef<(HTMLInputElement | null)[]>([])
+
+    const [loading, setLoading] = React.useState(false)
 
     const navigate = useNavigate()
 
@@ -65,11 +69,19 @@ export function OtpForm({ className, ...props }: React.ComponentProps<'div'>) {
     const verify = async (e: any) => {
         try {
             e.preventDefault()
+
+            setLoading(true)
+
             const activation_token = sessionStorage.getItem('token') as string
             await verifyUser({ activation_token, activation_code: otp.join('') })
             navigate(ROUTES.LOGIN)
+
+            toast('Verification successful!')
         } catch (error) {
             console.error(error)
+            toast(error instanceof Error ? error.message : 'Verification failed!')
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -113,8 +125,9 @@ export function OtpForm({ className, ...props }: React.ComponentProps<'div'>) {
                     <Button
                         type="submit"
                         className="w-full"
+                        disabled={loading}
                         onClick={verify}>
-                        Verify
+                        {loading ? <Spinner /> : 'Verify'}
                     </Button>
 
                     <FieldDescription className="text-center">

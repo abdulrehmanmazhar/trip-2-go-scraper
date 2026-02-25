@@ -3,6 +3,7 @@ import type { RootState } from '../store'
 import constants, { APIS } from '@/constants'
 import type { IUser, THttpResponse } from '@/types'
 import { setAccessToken, setStatus, setUser } from '../slices/auth.slice'
+import { toast } from 'sonner'
 
 interface Action {
     type: string
@@ -53,9 +54,11 @@ export const loginMiddleware: Middleware = (store) => (next) => async (action) =
                 store.dispatch(setUser(response.data.user))
                 store.dispatch(setAccessToken(response.data.accessToken))
                 store.dispatch(setStatus('authenticated'))
+                toast('Login successful!')
                 break
         }
     } catch (error) {
+        toast(error instanceof Error ? error.message : 'Login failed!')
         store.dispatch(setUser(null))
         store.dispatch(setAccessToken(null))
         store.dispatch(setStatus('unauthenticated'))

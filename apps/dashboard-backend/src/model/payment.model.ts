@@ -1,4 +1,4 @@
-import mongoose, { Document, Model, Schema } from 'mongoose'
+import mongoose, { Document, Schema } from 'mongoose'
 
 export interface IPayment extends Document {
     client: mongoose.Types.ObjectId
@@ -33,7 +33,7 @@ export interface IPayment extends Document {
         ipAddress?: string
         userAgent?: string
         paymentGateway?: string
-        gatewayResponse?: any
+        gatewayResponse?: unknown
     }
     paidBy: {
         name: string
@@ -293,7 +293,7 @@ PaymentSchema.index({ dueDate: 1 }, { sparse: true })
 PaymentSchema.index({ 'refunds.date': 1 })
 
 // Pre-save middleware to generate receipt number if not provided
-PaymentSchema.pre('save', async function (next) {
+PaymentSchema.pre('save', async function () {
     if (!this.receiptNumber) {
         const date = new Date()
         const year = date.getFullYear().toString().slice(-2)
@@ -311,234 +311,233 @@ PaymentSchema.pre('save', async function (next) {
     if (this.status === 'Refunded' && !this.refundedAt) {
         this.refundedAt = new Date()
     }
-
-    next()
 })
 
-// Virtual for net amount (after taxes and discounts)
-PaymentSchema.virtual('netAmount').get(function (this: IPayment) {
-    let netAmount = this.amount
+// // Virtual for net amount (after taxes and discounts)
+// PaymentSchema.virtual('netAmount').get(function (this: IPayment) {
+//     let netAmount = this.amount
 
-    // Apply discount
-    if (this.discount && this.discount.amount) {
-        netAmount -= this.discount.amount
-    }
+//     // Apply discount
+//     if (this.discount && this.discount.amount) {
+//         netAmount -= this.discount.amount
+//     }
 
-    // Apply taxes
-    if (this.taxes && this.taxes.length > 0) {
-        const taxTotal = this.taxes.reduce((sum, tax) => sum + tax.amount, 0)
-        netAmount += taxTotal
-    }
+//     // Apply taxes
+//     if (this.taxes && this.taxes.length > 0) {
+//         const taxTotal = this.taxes.reduce((sum, tax) => sum + tax.amount, 0)
+//         netAmount += taxTotal
+//     }
 
-    return netAmount
-})
+//     return netAmount
+// })
 
-// Virtual for total refunded amount
-PaymentSchema.virtual('totalRefunded').get(function (this: IPayment) {
-    if (!this.refunds || this.refunds.length === 0) return 0
-    return this.refunds.reduce((sum, refund) => sum + refund.amount, 0)
-})
+// // Virtual for total refunded amount
+// PaymentSchema.virtual('totalRefunded').get(function (this: IPayment) {
+//     if (!this.refunds || this.refunds.length === 0) return 0
+//     return this.refunds.reduce((sum, refund) => sum + refund.amount, 0)
+// })
 
-// Virtual for remaining amount (if partial payments/refunds)
-PaymentSchema.virtual('remainingAmount').get(function (this: IPayment) {
-    const netAmount = this.netAmount
-    const totalRefunded = this.totalRefunded
-    return netAmount - totalRefunded
-})
+// // Virtual for remaining amount (if partial payments/refunds)
+// PaymentSchema.virtual('remainingAmount').get(function (this: IPayment) {
+//     const netAmount = this.netAmount
+//     const totalRefunded = this.totalRefunded
+//     return netAmount - totalRefunded
+// })
 
-// Static methods
-interface PaymentModel extends Model<IPayment> {
-    getSummaryByClient(clientId: string): Promise<IPaymentSummary>
-    getSummaryByDateRange(startDate: Date, endDate: Date): Promise<IPaymentSummary>
-    getRevenueByPeriod(period: 'day' | 'week' | 'month' | 'year'): Promise<any[]>
-}
+// // Static methods
+// interface PaymentModel extends Model<IPayment> {
+//     getSummaryByClient(clientId: string): Promise<IPaymentSummary>
+//     getSummaryByDateRange(startDate: Date, endDate: Date): Promise<IPaymentSummary>
+//     getRevenueByPeriod(period: 'day' | 'week' | 'month' | 'year'): Promise<any[]>
+// }
 
-// Get payment summary for a client
-PaymentSchema.statics.getSummaryByClient = async function (clientId: string): Promise<IPaymentSummary> {
-    const result = await this.aggregate([
-        { $match: { client: new mongoose.Types.ObjectId(clientId) } },
-        {
-            $group: {
-                _id: null,
-                totalAmount: { $sum: '$amount' },
-                completedAmount: {
-                    $sum: {
-                        $cond: [{ $eq: ['$status', 'Completed'] }, '$amount', 0]
-                    }
-                },
-                pendingAmount: {
-                    $sum: {
-                        $cond: [{ $eq: ['$status', 'Pending'] }, '$amount', 0]
-                    }
-                },
-                refundedAmount: {
-                    $sum: {
-                        $cond: [{ $eq: ['$status', 'Refunded'] }, '$amount', 0]
-                    }
-                },
-                count: { $sum: 1 }
-            }
-        }
-    ])
+// // Get payment summary for a client
+// PaymentSchema.statics.getSummaryByClient = async function (clientId: string): Promise<IPaymentSummary> {
+//     const result = await this.aggregate([
+//         { $match: { client: new mongoose.Types.ObjectId(clientId) } },
+//         {
+//             $group: {
+//                 _id: null,
+//                 totalAmount: { $sum: '$amount' },
+//                 completedAmount: {
+//                     $sum: {
+//                         $cond: [{ $eq: ['$status', 'Completed'] }, '$amount', 0]
+//                     }
+//                 },
+//                 pendingAmount: {
+//                     $sum: {
+//                         $cond: [{ $eq: ['$status', 'Pending'] }, '$amount', 0]
+//                     }
+//                 },
+//                 refundedAmount: {
+//                     $sum: {
+//                         $cond: [{ $eq: ['$status', 'Refunded'] }, '$amount', 0]
+//                     }
+//                 },
+//                 count: { $sum: 1 }
+//             }
+//         }
+//     ])
 
-    return (
-        result[0] || {
-            totalAmount: 0,
-            completedAmount: 0,
-            pendingAmount: 0,
-            refundedAmount: 0,
-            count: 0
-        }
-    )
-}
+//     return (
+//         result[0] || {
+//             totalAmount: 0,
+//             completedAmount: 0,
+//             pendingAmount: 0,
+//             refundedAmount: 0,
+//             count: 0
+//         }
+//     )
+// }
 
-// Get payment summary by date range
-PaymentSchema.statics.getSummaryByDateRange = async function (startDate: Date, endDate: Date): Promise<IPaymentSummary> {
-    const result = await this.aggregate([
-        {
-            $match: {
-                createdAt: { $gte: startDate, $lte: endDate }
-            }
-        },
-        {
-            $group: {
-                _id: null,
-                totalAmount: { $sum: '$amount' },
-                completedAmount: {
-                    $sum: {
-                        $cond: [{ $eq: ['$status', 'Completed'] }, '$amount', 0]
-                    }
-                },
-                pendingAmount: {
-                    $sum: {
-                        $cond: [{ $eq: ['$status', 'Pending'] }, '$amount', 0]
-                    }
-                },
-                refundedAmount: {
-                    $sum: {
-                        $cond: [{ $eq: ['$status', 'Refunded'] }, '$amount', 0]
-                    }
-                },
-                count: { $sum: 1 }
-            }
-        }
-    ])
+// // Get payment summary by date range
+// PaymentSchema.statics.getSummaryByDateRange = async function (startDate: Date, endDate: Date): Promise<IPaymentSummary> {
+//     const result = await this.aggregate([
+//         {
+//             $match: {
+//                 createdAt: { $gte: startDate, $lte: endDate }
+//             }
+//         },
+//         {
+//             $group: {
+//                 _id: null,
+//                 totalAmount: { $sum: '$amount' },
+//                 completedAmount: {
+//                     $sum: {
+//                         $cond: [{ $eq: ['$status', 'Completed'] }, '$amount', 0]
+//                     }
+//                 },
+//                 pendingAmount: {
+//                     $sum: {
+//                         $cond: [{ $eq: ['$status', 'Pending'] }, '$amount', 0]
+//                     }
+//                 },
+//                 refundedAmount: {
+//                     $sum: {
+//                         $cond: [{ $eq: ['$status', 'Refunded'] }, '$amount', 0]
+//                     }
+//                 },
+//                 count: { $sum: 1 }
+//             }
+//         }
+//     ])
 
-    return (
-        result[0] || {
-            totalAmount: 0,
-            completedAmount: 0,
-            pendingAmount: 0,
-            refundedAmount: 0,
-            count: 0
-        }
-    )
-}
+//     return (
+//         result[0] || {
+//             totalAmount: 0,
+//             completedAmount: 0,
+//             pendingAmount: 0,
+//             refundedAmount: 0,
+//             count: 0
+//         }
+//     )
+// }
 
-// Get revenue grouped by period
-PaymentSchema.statics.getRevenueByPeriod = async function (period: 'day' | 'week' | 'month' | 'year'): Promise<any[]> {
-    let groupFormat: any
+// // Get revenue grouped by period
+// PaymentSchema.statics.getRevenueByPeriod = async function (period: 'day' | 'week' | 'month' | 'year'): Promise<any[]> {
+//     let groupFormat: any
 
-    switch (period) {
-        case 'day':
-            groupFormat = {
-                year: { $year: '$createdAt' },
-                month: { $month: '$createdAt' },
-                day: { $dayOfMonth: '$createdAt' }
-            }
-            break
-        case 'week':
-            groupFormat = {
-                year: { $year: '$createdAt' },
-                week: { $week: '$createdAt' }
-            }
-            break
-        case 'month':
-            groupFormat = {
-                year: { $year: '$createdAt' },
-                month: { $month: '$createdAt' }
-            }
-            break
-        case 'year':
-            groupFormat = {
-                year: { $year: '$createdAt' }
-            }
-            break
-    }
+//     switch (period) {
+//         case 'day':
+//             groupFormat = {
+//                 year: { $year: '$createdAt' },
+//                 month: { $month: '$createdAt' },
+//                 day: { $dayOfMonth: '$createdAt' }
+//             }
+//             break
+//         case 'week':
+//             groupFormat = {
+//                 year: { $year: '$createdAt' },
+//                 week: { $week: '$createdAt' }
+//             }
+//             break
+//         case 'month':
+//             groupFormat = {
+//                 year: { $year: '$createdAt' },
+//                 month: { $month: '$createdAt' }
+//             }
+//             break
+//         case 'year':
+//             groupFormat = {
+//                 year: { $year: '$createdAt' }
+//             }
+//             break
+//     }
 
-    return await this.aggregate([
-        { $match: { status: 'Completed' } },
-        {
-            $group: {
-                _id: groupFormat,
-                totalRevenue: { $sum: '$amount' },
-                count: { $sum: 1 },
-                averageAmount: { $avg: '$amount' }
-            }
-        },
-        { $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1 } }
-    ])
-}
+//     return await this.aggregate([
+//         { $match: { status: 'Completed' } },
+//         {
+//             $group: {
+//                 _id: groupFormat,
+//                 totalRevenue: { $sum: '$amount' },
+//                 count: { $sum: 1 },
+//                 averageAmount: { $avg: '$amount' }
+//             }
+//         },
+//         { $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1 } }
+//     ])
+// }
 
-// Instance methods
-PaymentSchema.methods.processRefund = async function (
-    amount: number,
-    reason: string,
-    processedBy: mongoose.Types.ObjectId,
-    transactionId?: string
-): Promise<IPayment> {
-    if (this.status === 'Refunded') {
-        throw new Error('Payment is already fully refunded')
-    }
+// // Instance methods
+// PaymentSchema.methods.processRefund = async function (
+//     amount: number,
+//     reason: string,
+//     processedBy: mongoose.Types.ObjectId,
+//     transactionId?: string
+// ): Promise<IPayment> {
+//     if (this.status === 'Refunded') {
+//         throw new Error('Payment is already fully refunded')
+//     }
 
-    const totalRefunded = this.refunds?.reduce((sum: number, r: any) => sum + r.amount, 0) || 0
-    const remainingAmount = this.amount - totalRefunded
+//     const totalRefunded = this.refunds?.reduce((sum: number, r: any) => sum + r.amount, 0) || 0
+//     const remainingAmount = this.amount - totalRefunded
 
-    if (amount > remainingAmount) {
-        throw new Error(`Refund amount (${amount}) exceeds remaining payment amount (${remainingAmount})`)
-    }
+//     if (amount > remainingAmount) {
+//         throw new Error(`Refund amount (${amount}) exceeds remaining payment amount (${remainingAmount})`)
+//     }
 
-    if (!this.refunds) {
-        this.refunds = []
-    }
+//     if (!this.refunds) {
+//         this.refunds = []
+//     }
 
-    this.refunds.push({
-        amount,
-        reason,
-        date: new Date(),
-        transactionId,
-        processedBy
-    })
+//     this.refunds.push({
+//         amount,
+//         reason,
+//         date: new Date(),
+//         transactionId,
+//         processedBy
+//     })
 
-    // Update status if fully refunded
-    const newTotalRefunded = totalRefunded + amount
-    if (Math.abs(newTotalRefunded - this.amount) < 0.01) {
-        // Account for floating point
-        this.status = 'Refunded'
-        this.refundedAt = new Date()
-    }
+//     // Update status if fully refunded
+//     const newTotalRefunded = totalRefunded + amount
+//     if (Math.abs(newTotalRefunded - this.amount) < 0.01) {
+//         // Account for floating point
+//         this.status = 'Refunded'
+//         this.refundedAt = new Date()
+//     }
 
-    return await this.save()
-}
+//     return await this.save()
+// }
 
-PaymentSchema.methods.markAsCompleted = async function (): Promise<IPayment> {
-    if (this.status === 'Completed') {
-        return this
-    }
+// PaymentSchema.methods.markAsCompleted = async function (): Promise<IPayment> {
+//     if (this.status === 'Completed') {
+//         return this
+//     }
 
-    this.status = 'Completed'
-    this.paidAt = new Date()
-    return await this.save()
-}
+//     this.status = 'Completed'
+//     this.paidAt = new Date()
+//     return await this.save()
+// }
 
-PaymentSchema.methods.markAsFailed = async function (reason?: string): Promise<IPayment> {
-    this.status = 'Failed'
-    if (reason) {
-        this.notes = this.notes ? `${this.notes}\nFailed: ${reason}` : `Failed: ${reason}`
-    }
-    return await this.save()
-}
+// PaymentSchema.methods.markAsFailed = async function (reason?: string): Promise<IPayment> {
+//     this.status = 'Failed'
+//     if (reason) {
+//         this.notes = this.notes ? `${this.notes}\nFailed: ${reason}` : `Failed: ${reason}`
+//     }
+//     return await this.save()
+// }
 
-const PaymentModel: PaymentModel = mongoose.model<IPayment, PaymentModel>('Payment', PaymentSchema)
+// const PaymentModel: PaymentModel = mongoose.model<IPayment, PaymentModel>('Payment', PaymentSchema)
+const PaymentModel = mongoose.model<IPayment>('Payment', PaymentSchema)
 
 export default PaymentModel
