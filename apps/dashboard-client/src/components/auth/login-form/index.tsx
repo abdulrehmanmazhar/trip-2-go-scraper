@@ -3,13 +3,19 @@ import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldGroup, FieldLabel, FieldSeparator } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Eye, EyeOff } from 'lucide-react'
-import constants, { ROUTES } from '@/constants'
+import constants, { APIS, ROUTES } from '@/constants'
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect, useState } from 'react'
 import { selectAuthStatus, selectUser } from '@/redux/selectors/auth.selector'
 import { Spinner } from '@/components/ui/spinner'
+import type { THttpResponse } from '@/types'
 
+interface GetAuthLinkResponse extends THttpResponse {
+    data: {
+        authUrl: string
+    }
+}
 export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -39,6 +45,15 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     const login = async (e: any) => {
         e.preventDefault()
         dispatch({ type: '/login', payload: { email, password } })
+    }
+
+    const getGoogleAuthURL = async () => {
+        const response = await fetch(`${constants.BACKEND_LINK}${constants.API_VERSION}${APIS.GOOGLE_AUTH_LINK}`)
+
+        const data = (await response.json()) as GetAuthLinkResponse
+
+        window.location.href = data.data.authUrl
+        // navigate()
     }
 
     return (
@@ -138,7 +153,8 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                         </Button>
                         <Button
                             variant="outline"
-                            type="button">
+                            type="button"
+                            onClick={getGoogleAuthURL}>
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24">

@@ -1,3 +1,4 @@
+import Callback from '@/components/auth/callback'
 import ForgotPassword from '@/pages/ForgotPassword'
 import Login from '@/pages/Login'
 import NotFound from '@/pages/NotFound'
@@ -31,6 +32,10 @@ function AuthRouter({}: Props) {
             <Route
                 path="/otp"
                 element={<Otp />}
+            />
+            <Route
+                path="/callback"
+                element={<Callback />}
             />
             <Route
                 path="/unauthorized"

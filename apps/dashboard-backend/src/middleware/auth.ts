@@ -43,9 +43,10 @@ export const isAuthenticated = async (req: Request, _res: Response, next: NextFu
 }
 
 export const authorizeRoles = (...roles: IUser['role'][]) => {
-    return (req: IReq, _res: Response, next: NextFunction) => {
-        if (!roles.includes(req.user.role)) {
-            return httpError(next, new Error(`Role: ${req.user?.role} is not allowed to access this resource`), req, 403)
+    return (req: Request, _res: Response, next: NextFunction) => {
+        const user = (req as IReq).user
+        if (!roles.includes(user.role)) {
+            return httpError(next, new Error(`Role: ${user.role} is not allowed to access this resource`), req, 403)
         }
         next()
     }

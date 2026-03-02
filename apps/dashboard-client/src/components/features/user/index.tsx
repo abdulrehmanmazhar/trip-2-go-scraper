@@ -8,7 +8,7 @@ import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectUser } from '@/redux/selectors/auth.selector'
 import constants, { APIS, ROUTES } from '@/constants'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { setAccessToken, setStatus, setUser } from '@/redux/slices/auth.slice'
 
 export default function User() {
@@ -95,12 +95,12 @@ export default function User() {
                 <DropdownMenuSeparator />
 
                 {/* Profile */}
-                <DropdownMenuItem
-                    onClick={onLogout}
-                    className="cursor-pointer">
-                    <User2 className="mr-2 h-4 w-4" />
-                    Profile
-                </DropdownMenuItem>
+                <Link to={ROUTES.USER.PROFILE}>
+                    <DropdownMenuItem className="cursor-pointer">
+                        <User2 className="mr-2 h-4 w-4" />
+                        Profile
+                    </DropdownMenuItem>
+                </Link>
 
                 <DropdownMenuSeparator />
 

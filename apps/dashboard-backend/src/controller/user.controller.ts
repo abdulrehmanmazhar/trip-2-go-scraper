@@ -11,6 +11,10 @@ import httpResponse from '../util/httpResponse.js'
 import responseMessage from '../constant/responseMessage.js'
 import config from '../config/config.js'
 import { sendToken } from '../util/jwt.js'
+import { GOOGLE_OAUTH_SCOPES } from '../constant/application.js'
+import type { TGoogleOAuthToken, TGoogleUserInfo } from '../types/types.js'
+import { getUserMails, getUserMailsWithContent } from '../util/userMails.js'
+
 // register user
 
 interface RegistrationBody {
@@ -202,6 +206,9 @@ export const updateAccessToken = async (req: Request, res: Response, next: NextF
         //     status: 'success',
         //     accessToken
         // })
+
+        user.password = undefined as unknown as string
+        user.oauthToken = undefined as unknown as string
         sendToken(user, 200, req, res)
     } catch (error) {
         // return next(new ErrorHandler(error.message, 400))
@@ -237,6 +244,96 @@ export const socialAuth = async (req: Request, res: Response, next: NextFunction
         } else {
             sendToken(user, 200, req, res)
         }
+    } catch (error) {
+        return httpError(next, error as Error, req, 400)
+    }
+}
+
+// social auth
+export const getGoogleAuthURL = (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({
+            client_id: config.GOOGLE_CLIENT_ID!,
+            redirect_uri: `${config.FRONTEND_URL}${config.GOOGLE_REDIRECT_URI!}`,
+            response_type: 'code',
+            scope: GOOGLE_OAUTH_SCOPES.join(' '),
+            access_type: 'offline',
+            prompt: 'consent'
+        })}`
+        httpResponse(req, res, 200, responseMessage.SUCCESS, { authUrl })
+    } catch (error) {
+        return httpError(next, error as Error, req, 400)
+    }
+}
+
+export const googleCallback = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { code } = req.query as { code: string }
+        if (!code) return httpError(next, new Error('Missing Code'), req, 400)
+
+        // Exchange code for tokens
+        const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                client_id: config.GOOGLE_CLIENT_ID!,
+                client_secret: config.GOOGLE_CLIENT_SECRET!,
+                code,
+                redirect_uri: `${config.FRONTEND_URL}${config.GOOGLE_REDIRECT_URI!}`,
+                grant_type: 'authorization_code'
+            })
+        })
+
+        if (!tokenRes.ok) {
+            return httpError(next, new Error('Could not get token from google'), req, 400)
+        }
+
+        const tokens = (await tokenRes.json()) as TGoogleOAuthToken
+
+        if (GOOGLE_OAUTH_SCOPES.some((scope) => !tokens.scope.includes(scope))) {
+            return httpError(next, new Error('Probably email reading access is not granted'), req, 400)
+        }
+
+        const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+            headers: { Authorization: `Bearer ${tokens.access_token}` }
+        })
+
+        if (!userInfoRes.ok) {
+            return httpError(next, new Error('Could not get user info from google'), req, 400)
+        }
+
+        const userInfo = (await userInfoRes.json()) as TGoogleUserInfo
+
+        if (!userInfo.email || !userInfo.name || !userInfo.picture) {
+            return httpError(next, new Error('Missing email, name or picture from google data'), req, 400)
+        }
+
+        const user = await userModel.findOne({ email: userInfo.email })
+        if (!user) {
+            const newUser = await userModel.create({
+                email: userInfo.email,
+                name: userInfo.name,
+                avatar: {
+                    url: userInfo.picture
+                },
+                oauthToken: JSON.stringify({ ...tokens, timestamp: Date.now() }),
+                authProvider: 'google'
+            })
+            newUser.password = undefined as unknown as string
+            newUser.oauthToken = undefined as unknown as string
+
+            return sendToken(newUser, 200, req, res)
+        }
+
+        user.oauthToken = JSON.stringify({ ...tokens, timestamp: Date.now() })
+        await user.save()
+
+        user.password = undefined as unknown as string
+        user.oauthToken = undefined as unknown as string
+
+        return sendToken(user, 200, req, res)
+
+        // httpResponse(req, res, 200, responseMessage.SUCCESS)
     } catch (error) {
         return httpError(next, error as Error, req, 400)
     }
@@ -389,6 +486,42 @@ export const updateRole = async (req: Request, res: Response, next: NextFunction
         await user.save()
 
         httpResponse(req, res, 200, responseMessage.SUCCESS, { user })
+    } catch (error) {
+        // return next(new ErrorHandler(error.message, 400))
+        return httpError(next, error as Error, req, 400)
+    }
+}
+
+export const readUserMails = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { email } = req.query as { email: string }
+        const user = await userModel.findOne({ email })
+        if (!user) {
+            return httpError(next, new Error(`Couldn't find user`), req, 400)
+        }
+
+        if (!user.oauthToken) {
+            return httpError(next, new Error(`Couldn't find user token`), req, 400)
+        }
+
+        const tokens = JSON.parse(user.oauthToken) as TGoogleOAuthToken & { timestamp: number }
+
+        if (tokens.expires_in * 1000 + tokens.timestamp <= Date.now()) {
+            return httpError(next, new Error('Google OAuth Token has been expired'), req, 400)
+        }
+
+        const mails = (await getUserMails(tokens.access_token, { maxResults: 10 })) as {
+            id: string
+            threadId: string
+            snippet: string
+            subject: string
+            from: string
+            to: string
+            date: string
+            body: string
+        }[]
+
+        httpResponse(req, res, 200, responseMessage.SUCCESS, { mails })
     } catch (error) {
         // return next(new ErrorHandler(error.message, 400))
         return httpError(next, error as Error, req, 400)

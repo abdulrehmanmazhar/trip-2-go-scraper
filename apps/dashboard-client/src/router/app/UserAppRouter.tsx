@@ -5,6 +5,7 @@ import AppointmentForm from '@/pages/AppointmentForm'
 
 import NotFound from '@/pages/NotFound'
 import PaymentForm from '@/pages/PaymentForm'
+import Profile from '@/pages/Profile'
 import UserApplications from '@/pages/UserApplications'
 
 import { Route, Routes } from 'react-router-dom'
@@ -17,6 +18,10 @@ function UserAppRouter({}: Props) {
             <Route
                 path="/"
                 element={<UserApplications />}
+            />
+            <Route
+                path="/profile"
+                element={<Profile />}
             />
             <Route
                 path="/appointment-form"

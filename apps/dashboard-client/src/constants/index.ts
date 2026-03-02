@@ -18,7 +18,9 @@ export const APIS = {
     SIGNUP: '/registration',
     OTP: '/activate-user',
     UPDATE_ACCESS_TOKEN: '/refresh',
-    LOGOUT: '/logout'
+    LOGOUT: '/logout',
+    GOOGLE_AUTH_LINK: '/get-google-auth-url',
+    GOOGLE_CALLBACK: '/google-callback'
 }
 
 export const ROUTES = {
@@ -35,6 +37,7 @@ export const ROUTES = {
         DASHBOARD: '/u',
         APPOINTMENT: '/u/appointment-form',
         PAYMENT: '/u/payment-form',
+        PROFILE: '/u/profile',
         TERMS: '/u/terms',
         PRIVACY: '/u/privacy',
         ABOUT: '/u/about'
@@ -49,6 +52,7 @@ export const ROUTES = {
         WORKFLOW_BUILDER: '/admin/workflow-builder',
         CLIENTS: '/admin/clients',
         CLIENT_DATA: '/admin/client-data',
+        PROFILE: '/admin/profile',
         TERMS: '/admin/terms',
         PRIVACY: '/admin/privacy',
         ABOUT: '/admin/about'

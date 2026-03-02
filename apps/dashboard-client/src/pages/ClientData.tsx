@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Plus, SlidersHorizontal } from 'lucide-react'
+import Header from '@/components/features/header'
 
 /* ----------------------------- Types ----------------------------- */
 
@@ -133,98 +134,102 @@ export default function ClientData() {
     })
 
     return (
-        <div className="space-y-6 p-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-semibold tracking-tight">Client Data</h1>
-                    <p className="text-sm text-muted-foreground">Manage client credentials, travel details, and operational status.</p>
+        <div className="bg-background">
+            {/* Sticky Header */}
+
+            <Header
+                title="Client Data"
+                subtitle="Manage client credentials, travel details, and operational status"
+                actions={
+                    <Button className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        Create Client
+                    </Button>
+                }
+            />
+
+            {/* Main Content */}
+            <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+                {/* Toolbar */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <Input
+                        placeholder="Search clients…"
+                        value={globalFilter}
+                        onChange={(e) => setGlobalFilter(e.target.value)}
+                        className="max-w-sm h-11"
+                    />
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-2 h-11">
+                                <SlidersHorizontal className="h-4 w-4" />
+                                View
+                            </Button>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent align="end">
+                            {table
+                                .getAllColumns()
+                                .filter((column) => column.getCanHide())
+                                .map((column) => (
+                                    <DropdownMenuCheckboxItem
+                                        key={column.id}
+                                        checked={column.getIsVisible()}
+                                        onCheckedChange={(value) => column.toggleVisibility(!!value)}>
+                                        {column.columnDef.header as string}
+                                    </DropdownMenuCheckboxItem>
+                                ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
 
-                <Button className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    Create Client
-                </Button>
-            </div>
-
-            {/* Toolbar */}
-            <div className="flex items-center justify-between gap-4">
-                <Input
-                    placeholder="Search clients…"
-                    value={globalFilter}
-                    onChange={(e) => setGlobalFilter(e.target.value)}
-                    className="max-w-sm"
-                />
-
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-2">
-                            <SlidersHorizontal className="h-4 w-4" />
-                            View
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        {table
-                            .getAllColumns()
-                            .filter((column) => column.getCanHide())
-                            .map((column) => (
-                                <DropdownMenuCheckboxItem
-                                    key={column.id}
-                                    checked={column.getIsVisible()}
-                                    onCheckedChange={(value) => column.toggleVisibility(!!value)}>
-                                    {column.columnDef.header as string}
-                                </DropdownMenuCheckboxItem>
-                            ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-
-            {/* Table */}
-            <div className="rounded-lg border bg-card overflow-x-auto max-w-screen">
-                <Table className="table-fixed max-w-full">
-                    <TableHeader className="sticky top-0 bg-card">
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((header) => (
-                                    <TableHead
-                                        key={header.id}
-                                        style={{ width: header.getSize() }}
-                                        className="whitespace-nowrap">
-                                        {flexRender(header.column.columnDef.header, header.getContext())}
-                                    </TableHead>
-                                ))}
-                            </TableRow>
-                        ))}
-                    </TableHeader>
-
-                    <TableBody>
-                        {table.getRowModel().rows.length ? (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow key={row.id}>
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell
-                                            key={cell.id}
-                                            style={{ width: cell.column.getSize() }}
-                                            className="truncate whitespace-nowrap">
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                        </TableCell>
+                {/* Table */}
+                <div className="rounded-lg border bg-card overflow-x-auto w-full">
+                    <Table className="table-fixed w-full">
+                        <TableHeader className="sticky top-0 bg-card z-20">
+                            {table.getHeaderGroups().map((headerGroup) => (
+                                <TableRow key={headerGroup.id}>
+                                    {headerGroup.headers.map((header) => (
+                                        <TableHead
+                                            key={header.id}
+                                            style={{ width: header.getSize() }}
+                                            className="whitespace-nowrap">
+                                            {flexRender(header.column.columnDef.header, header.getContext())}
+                                        </TableHead>
                                     ))}
                                 </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell
-                                    colSpan={columns.length}
-                                    className="h-24 text-center text-muted-foreground">
-                                    No results found.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
+                            ))}
+                        </TableHeader>
+
+                        <TableBody>
+                            {table.getRowModel().rows.length ? (
+                                table.getRowModel().rows.map((row) => (
+                                    <TableRow key={row.id}>
+                                        {row.getVisibleCells().map((cell) => (
+                                            <TableCell
+                                                key={cell.id}
+                                                style={{ width: cell.column.getSize() }}
+                                                className="truncate whitespace-nowrap">
+                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={columns.length}
+                                        className="h-24 text-center text-muted-foreground">
+                                        No results found.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
         </div>
     )

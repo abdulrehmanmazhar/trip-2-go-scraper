@@ -7,6 +7,7 @@ import ClientData from '@/pages/ClientData'
 import Dashboard from '@/pages/Dashboard'
 import LiveActivity from '@/pages/LiveActivity'
 import NotFound from '@/pages/NotFound'
+import Profile from '@/pages/Profile'
 import WorkflowBuilder from '@/pages/WorkflowBuilder'
 import Workflows from '@/pages/Workflows'
 import { Route, Routes } from 'react-router-dom'
@@ -19,6 +20,10 @@ function AdminAppRouter({}: Props) {
             <Route
                 path="/"
                 element={<Dashboard />}
+            />
+            <Route
+                path="/profile"
+                element={<Profile />}
             />
             <Route
                 path="/live-activity"

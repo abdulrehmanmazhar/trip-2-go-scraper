@@ -10,8 +10,38 @@ import UserFooter from '@/components/features/user-footer'
 import { Link } from 'react-router-dom'
 import { ROUTES } from '@/constants'
 import User from '@/components/features/user'
+import { useState } from 'react'
+import { parsePhoneNumberFromString } from 'libphonenumber-js'
+import { countries } from '@/constants/countries'
+import ReactCountryFlag from 'react-country-flag'
 
 function AppointmentForm() {
+    const [selectedCountry, setSelectedCountry] = useState('PK')
+    const [phone, setPhone] = useState('')
+    const [phoneError, setPhoneError] = useState<string | null>(null)
+
+    const selected = countries.find((c) => c.code === selectedCountry)
+
+    const handleValidatePhone = () => {
+        const country = countries.find((c) => c.code === selectedCountry)
+        if (!country) return
+
+        const fullNumber = `${country.dial}${phone}`
+
+        const parsed = parsePhoneNumberFromString(fullNumber)
+
+        if (!parsed || !parsed.isValid()) {
+            setPhoneError('Enter a valid phone number')
+            return
+        }
+
+        setPhoneError(null)
+
+        // This is your final E.164 formatted number
+        const e164 = parsed.number
+        console.log('E.164:', e164)
+    }
+
     return (
         <div className="min-h-screen flex flex-col">
             {/* Sticky Header */}
@@ -68,12 +98,59 @@ function AppointmentForm() {
                     <div className="space-y-8">
                         <h2 className="text-xl font-semibold border-b pb-3">Contact Details</h2>
 
-                        <div className="flex gap-4 max-w-xl">
-                            <Input
-                                className="w-28"
-                                placeholder="+92"
-                            />
-                            <Input placeholder="Enter phone number" />
+                        <div className="flex flex-col sm:flex-row gap-4 max-w-xl">
+                            {/* Country Select */}
+                            <Select
+                                value={selectedCountry}
+                                onValueChange={setSelectedCountry}>
+                                <SelectTrigger className="!h-11 w-full sm:w-40 px-3">
+                                    <SelectValue asChild>
+                                        <div className="flex items-center gap-2">
+                                            {selected && (
+                                                <>
+                                                    <ReactCountryFlag
+                                                        countryCode={selected.code}
+                                                        svg
+                                                        style={{ width: '20px', height: '20px' }}
+                                                    />
+                                                    <span className="text-sm font-medium">{selected.dial}</span>
+                                                </>
+                                            )}
+                                        </div>
+                                    </SelectValue>
+                                </SelectTrigger>
+
+                                <SelectContent>
+                                    {countries.map((country) => (
+                                        <SelectItem
+                                            key={country.code}
+                                            value={country.code}>
+                                            <div className="flex items-center gap-3">
+                                                <ReactCountryFlag
+                                                    countryCode={country.code}
+                                                    svg
+                                                    style={{ width: '20px', height: '20px' }}
+                                                />
+                                                <span className="font-medium">{country.dial}</span>
+                                                <span className="text-muted-foreground text-sm">{country.name}</span>
+                                            </div>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            {/* Phone Input */}
+                            <div className="flex-1 space-y-2">
+                                <Input
+                                    className="h-11"
+                                    placeholder="Enter phone number"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                                    onBlur={handleValidatePhone}
+                                />
+
+                                {phoneError && <p className="text-sm text-destructive">{phoneError}</p>}
+                            </div>
                         </div>
                     </div>
 

@@ -14,7 +14,9 @@ export interface IUser extends Document {
         url: string
     }
     role: 'admin' | 'user'
-    isVerified: boolean
+    // isVerified: boolean
+    authProvider?: 'google' | 'microsoft'
+    oauthToken: string
     routes: string[]
     comparePassword(password: string): Promise<boolean>
     signAccessToken(): string
@@ -69,9 +71,19 @@ const userSchema: Schema<IUser, UserModel> = new mongoose.Schema(
             },
             default: 'user'
         },
-        isVerified: {
-            type: Boolean,
-            default: false
+        // isVerified: {
+        //     type: Boolean,
+        //     default: false
+        // },
+        authProvider: {
+            type: String,
+            enum: {
+                values: ['google', 'microsoft'],
+                message: 'User role must be either Admin or User'
+            }
+        },
+        oauthToken: {
+            type: String
         },
         routes: {
             type: [String],

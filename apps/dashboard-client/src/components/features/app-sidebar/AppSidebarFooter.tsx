@@ -10,7 +10,7 @@ import constants, { APIS, ROUTES } from '@/constants'
 import { useDispatch, useSelector } from 'react-redux'
 import { setAccessToken, setStatus, setUser } from '@/redux/slices/auth.slice'
 import { selectUser } from '@/redux/selectors/auth.selector'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 export function AppSidebarFooter() {
     const { theme, setTheme } = useTheme()
@@ -58,7 +58,9 @@ export function AppSidebarFooter() {
                         side="top"
                         align="end"
                         className="w-40">
-                        <DropdownMenuItem>Profile</DropdownMenuItem>
+                        <Link to={ROUTES.ADMIN.PROFILE}>
+                            <DropdownMenuItem>Profile</DropdownMenuItem>
+                        </Link>
                         <DropdownMenuItem>Settings</DropdownMenuItem>
                         <DropdownMenuItem
                             className="text-destructive"
