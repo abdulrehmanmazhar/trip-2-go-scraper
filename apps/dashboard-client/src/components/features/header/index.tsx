@@ -8,7 +8,7 @@ type HeaderProps = {
     className?: string
 }
 
-function Header({ title, subtitle, actions, className }: HeaderProps) {
+function Header({ title, subtitle, actions }: HeaderProps) {
     return (
         // <header className={cn('flex items-center justify-between gap-4 border-b px-6 py-4', className)}>
         //     {/* Left */}

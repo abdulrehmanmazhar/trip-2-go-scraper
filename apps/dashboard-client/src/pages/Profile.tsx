@@ -10,9 +10,9 @@ import { selectUser } from '@/redux/selectors/auth.selector'
 
 export default function Profile() {
     const user = useSelector(selectUser)!
-    const onUpdateProfile = async () => {}
-    const onChangePassword = async () => {}
-    const onUpdateAvatar = async () => {}
+    // const onUpdateProfile = async () => {}
+    // const onChangePassword = async () => {}
+    // const onUpdateAvatar = async () => {}
 
     const [name, setName] = useState(user.name)
     const [currentPassword, setCurrentPassword] = useState('')
@@ -59,10 +59,10 @@ export default function Profile() {
                                         type="file"
                                         className="hidden"
                                         accept="image/*"
-                                        onChange={(e) => {
-                                            if (e.target.files?.[0]) {
-                                                onUpdateAvatar(e.target.files[0])
-                                            }
+                                        onChange={() => {
+                                            // if (e.target.files?.[0]) {
+                                            //     onUpdateAvatar(e.target.files[0])
+                                            // }
                                         }}
                                     />
                                     <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
@@ -89,7 +89,7 @@ export default function Profile() {
 
                         <div className="flex justify-end">
                             <Button
-                                onClick={() => onUpdateProfile({ name })}
+                                onClick={() => {}}
                                 className="h-11 px-8">
                                 Save Changes
                             </Button>
@@ -131,10 +131,11 @@ export default function Profile() {
                             <Button
                                 variant="secondary"
                                 onClick={() =>
-                                    onChangePassword({
-                                        currentPassword,
-                                        newPassword
-                                    })
+                                    // onChangePassword({
+                                    //     currentPassword,
+                                    //     newPassword
+                                    // })
+                                    {}
                                 }
                                 className="h-11 px-8">
                                 Update Password

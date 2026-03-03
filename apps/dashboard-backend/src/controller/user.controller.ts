@@ -13,7 +13,7 @@ import config from '../config/config.js'
 import { sendToken } from '../util/jwt.js'
 import { GOOGLE_OAUTH_SCOPES } from '../constant/application.js'
 import type { TGoogleOAuthToken, TGoogleUserInfo } from '../types/types.js'
-import { getUserMails, getUserMailsWithContent } from '../util/userMails.js'
+import { getUserMails } from '../util/userMails.js'
 
 // register user
 
