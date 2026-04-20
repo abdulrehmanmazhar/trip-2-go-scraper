@@ -4,10 +4,9 @@ import { chromium } from 'playwright'
 import fs from 'fs'
 import path from 'path'
 import crypto from 'crypto'
-import { getChromeUserDataDir } from './getChromeUserDataDir.js'
-import { findChromeExecutable } from './findChromeExecutable.js'
-
 import os from 'node:os'
+import { findChromeExecutable, getChromeUserDataDir } from 'shared-utils'
+
 const OUTPUT_DIR = path.resolve(os.homedir(), 'Desktop', 'Trip2go_Dump', 'network_dump')
 const HAR_PATH = path.resolve(os.homedir(), 'Desktop', 'Trip2go_Dump', 'network.har')
 
