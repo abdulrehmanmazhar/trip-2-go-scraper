@@ -10,7 +10,7 @@
     "nativeAllowList": ["app.*", "os.*", "filesystem.*", "storage.*", "window.*", "events.*", "debug.*", "extensions.*", "updater.*", "clipboard.*"],
     "modes": {
         "window": {
-            "title": "Neutralino + Vite App",
+            "title": "Workflow Recorder",
             "width": 1200,
             "height": 800,
             "icon": "/trip2go.png",
