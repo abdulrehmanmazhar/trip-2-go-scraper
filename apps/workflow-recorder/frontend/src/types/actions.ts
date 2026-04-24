@@ -1,69 +1,138 @@
-export type ClickAction = {
+export type ActionName =
+    | 'check'
+    | 'click'
+    | 'hover'
+    | 'closePage'
+    | 'fill'
+    | 'navigate'
+    | 'openPage'
+    | 'press'
+    | 'select'
+    | 'uncheck'
+    | 'setInputFiles'
+    | 'assertText'
+    | 'assertValue'
+    | 'assertChecked'
+    | 'assertVisible'
+    | 'assertSnapshot'
+
+export type BaseSignal = {
+    nope: unknown
+}
+
+export type NavigationSignal = BaseSignal & {
+    name: 'navigation'
+    url: string
+}
+
+export type PopupSignal = BaseSignal & {
+    name: 'popup'
+    popupAlias: string
+}
+
+export type DownloadSignal = BaseSignal & {
+    name: 'download'
+    downloadAlias: string
+}
+
+export type DialogSignal = BaseSignal & {
+    name: 'dialog'
+    dialogAlias: string
+}
+
+export type Signal = NavigationSignal | PopupSignal | DownloadSignal | DialogSignal
+
+export type ActionBase = {
+    name: ActionName
+    signals: Signal[]
+    ariaSnapshot?: string
+    preconditionSelector?: string
+}
+
+export type ActionWithSelector = ActionBase & {
+    selector: string
+    ref?: string
+}
+
+export type ClickAction = ActionWithSelector & {
     name: 'click'
     button: 'left' | 'middle' | 'right'
     modifiers: number
     clickCount: number
+    // position?: Point
 }
 
-export type HoverAction = {
+export type HoverAction = ActionWithSelector & {
     name: 'hover'
+    // position?: Point
 }
 
-export type CheckAction = {
+export type CheckAction = ActionWithSelector & {
     name: 'check'
 }
 
-export type UncheckAction = {
+export type UncheckAction = ActionWithSelector & {
     name: 'uncheck'
 }
 
-export type FillAction = {
+export type FillAction = ActionWithSelector & {
     name: 'fill'
     text: string
 }
 
-export type Navigate = {
+export type NavigateAction = ActionBase & {
     name: 'navigate'
     url: string
 }
 
-export type OpenPage = {
+export type OpenPageAction = ActionBase & {
     name: 'openPage'
     url: string
 }
 
-export type ClosesPage = {
+export type ClosesPageAction = ActionBase & {
     name: 'closePage'
 }
 
-export type PressAction = {
+export type PressAction = ActionWithSelector & {
     name: 'press'
     key: string
     modifiers: number
 }
 
-export type SelectAction = {
+export type SelectAction = ActionWithSelector & {
     name: 'select'
     options: string[]
 }
 
-export type SetInputFilesAction = {
+export type SetInputFilesAction = ActionWithSelector & {
     name: 'setInputFiles'
     files: string[]
 }
 
-export type NavigateAction = {
-    name: 'navigate'
-    url: string
+export type AssertTextAction = ActionWithSelector & {
+    name: 'assertText'
+    text: string
+    substring: boolean
 }
 
-export type OpenPageAction = {
-    name: 'openPage'
-    url: string
+export type AssertValueAction = ActionWithSelector & {
+    name: 'assertValue'
+    value: string
 }
 
-export type ClosesPageAction = {
-    name: 'closePage'
+export type AssertCheckedAction = ActionWithSelector & {
+    name: 'assertChecked'
+    checked: boolean
+}
+
+export type AssertVisibleAction = ActionWithSelector & {
+    name: 'assertVisible'
+}
+
+export type AssertSnapshotAction = ActionWithSelector & {
+    name: 'assertSnapshot'
+    ariaSnapshot: string
 }
 
 export type TPlaywrightAction =
@@ -78,6 +147,11 @@ export type TPlaywrightAction =
     | PressAction
     | SelectAction
     | SetInputFilesAction
+    | AssertCheckedAction
+    | AssertSnapshotAction
+    | AssertTextAction
+    | AssertValueAction
+    | AssertVisibleAction
 
 export type TNetworkInterceptorAction = {
     name: 'networkInterceptionAction'
@@ -93,7 +167,7 @@ export type PlaywrightConfigs = {
         // 🔹 Core
         headless?: boolean
         executablePath?: string
-        channel?: 'chrome' | 'msedge' | 'chromium'
+        channel?: 'chrome'
         args?: string[]
         ignoreDefaultArgs?: boolean | string[]
 
@@ -105,9 +179,9 @@ export type PlaywrightConfigs = {
         // 🔹 Network
         proxy?: {
             server: string
-            bypass?: string
-            username?: string
-            password?: string
+            bypass: string
+            username: string
+            password: string
         }
 
         // 🔹 Security
@@ -220,7 +294,7 @@ export type CloseBrowserAction = {
 export type TBrowserAction = LaunchBrowserAction | CloseBrowserAction
 
 export type CustomServerAction = {
-    name: 'serverAction'
+    name: 'customServerAction'
     type: 'custom'
     runtimeEnvRef: 'environment' | 'context'
     action: {
@@ -231,7 +305,7 @@ export type CustomServerAction = {
 }
 
 export type BuiltInServerAction = {
-    name: 'serverAction'
+    name: 'builtInServerAction'
     type: 'built-in'
     runtimeEnvRef: 'environment' | 'context'
     action: {
@@ -251,6 +325,8 @@ export type TInterruptionAction = {
         attr: 'visible' | 'hidden'
     }
 }
+
+export type TAction = TPlaywrightAction | TNetworkInterceptorAction | TBrowserAction | TServerAction | TInterruptionAction
 
 // export type ControlFlowAction = IfElseAction |
 

@@ -1,5 +1,5 @@
 import type { TPlaywrightAction } from '@/types/actions'
-import { Handle, Position, type NodeProps } from 'reactflow'
+import { Handle, Position, useReactFlow, useStore, type NodeProps } from 'reactflow'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -13,9 +13,14 @@ import {
     FileUp,
     Globe,
     ExternalLink,
-    XCircle
+    XCircle,
+    X
 } from 'lucide-react'
 import playwrightIcon from '@/assets/playwright-logo.svg'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectSelectedNode, selectSelectedNodeData } from '@/redux/selector/node'
+import { setInspector } from '@/redux/slice/inspector'
+import { updateSelectedData, updateSelectedNode } from '@/redux/slice/node'
 
 // Helper function to get action-specific details with icon
 const getActionDetails = (action: TPlaywrightAction) => {
@@ -107,11 +112,42 @@ const getActionDetails = (action: TPlaywrightAction) => {
     }
 }
 
-function PlaywrightAction({ data }: NodeProps<TPlaywrightAction>) {
+function PlaywrightAction({ data, id }: NodeProps<TPlaywrightAction>) {
     const { label, details, badgeIcon: BadgeIcon, badgeVariant } = getActionDetails(data)
 
+    const { setNodes } = useReactFlow()
+    const isLocked = useStore((state) => !state.nodesDraggable && !state.nodesConnectable) // Accessing the isLocked state from the store
+
+    const filterNodes = (nodeId: string) => {
+        if (isLocked) return // Prevent node deletion when the graph is locked
+        setNodes((prevNodes) => prevNodes.filter((node) => node.id !== nodeId))
+    }
+
+    const selectedNodeId = useSelector(selectSelectedNode)
+    const selectedNodeData = useSelector(selectSelectedNodeData)
+
+    const dispatch = useDispatch()
+
+    const isSelected = selectedNodeId === id && selectedNodeData && selectedNodeData.type === 'playwrightAction'
+
+    const clickHandler = () => {
+        dispatch(updateSelectedNode(id))
+        dispatch(updateSelectedData({ action: data, type: 'playwrightAction' }))
+        dispatch(setInspector(true))
+    }
     return (
         <div className="relative group">
+            {/* Close Button - Always visible */}
+            {!isLocked && (
+                <div className="nodrag nopan absolute -top-2 -right-2 z-10">
+                    <button
+                        className="flex items-center justify-center w-6 h-6 rounded-full bg-red-500 text-white shadow-md hover:bg-red-600 transition-all hover:scale-110"
+                        onClick={() => filterNodes(id)}>
+                        <X size={14} />
+                    </button>
+                </div>
+            )}
+
             {/* Target Handle (Top) */}
             <Handle
                 type="target"
@@ -127,7 +163,9 @@ function PlaywrightAction({ data }: NodeProps<TPlaywrightAction>) {
             />
 
             {/* Main Card - removed shadow to match browser action */}
-            <Card className="w-65 transition-all">
+            <Card
+                className={`w-65 transition-all ${isSelected ? 'shadow-lg shadow-primary/50 ring-2 ring-primary ring-offset-2' : ''}`}
+                onClick={clickHandler}>
                 <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
                     <div className="flex items-center gap-2">
                         {/* Playwright Icon */}

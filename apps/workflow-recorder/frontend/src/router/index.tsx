@@ -16,7 +16,7 @@ const Router = () => {
                 element={<Home />}
             />
             <Route
-                path="/recorder"
+                path="/recorder/:id"
                 element={<Recorder />}
             />
             <Route

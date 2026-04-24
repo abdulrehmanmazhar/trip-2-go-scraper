@@ -1,1 +1,1 @@
-export const platform = 'unknown'
+export const platform = window.platform

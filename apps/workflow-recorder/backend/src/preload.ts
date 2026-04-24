@@ -9,7 +9,11 @@ import * as Neutralino from '@neutralinojs/lib'
 
                 os: Neutralino.os,
 
-                events: Neutralino.events
+                events: Neutralino.events,
+
+                storage: Neutralino.storage,
+
+                filesystem: Neutralino.filesystem
             }
         }
 

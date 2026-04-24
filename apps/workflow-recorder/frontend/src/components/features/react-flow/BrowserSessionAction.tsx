@@ -1,10 +1,14 @@
 import type { TBrowserAction, LaunchBrowserAction } from '@/types/actions'
-import { Handle, Position, type NodeProps } from 'reactflow'
+import { Handle, Position, useReactFlow, useStore, type NodeProps } from 'reactflow'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Globe, Power, Settings, Monitor, Shield, Clock, Network, PowerOff } from 'lucide-react'
+import { Globe, Power, Settings, Monitor, Shield, Clock, Network, PowerOff, X } from 'lucide-react'
 import chromeIcon from '@/assets/chrome-logo.webp'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectSelectedNode, selectSelectedNodeData } from '@/redux/selector/node'
+import { updateSelectedData, updateSelectedNode } from '@/redux/slice/node'
+import { setInspector } from '@/redux/slice/inspector'
 
 // Helper to get browser channel icon and label (always chromium/chrome)
 const getBrowserChannelInfo = () => {
@@ -94,7 +98,7 @@ const getActionDetails = (action: TBrowserAction) => {
     }
 }
 
-function BrowserSessionAction({ data }: NodeProps<TBrowserAction>) {
+function BrowserSessionAction({ data, id }: NodeProps<TBrowserAction>) {
     const { label, badgeIcon: BadgeIcon, badgeVariant, configSummary, hasCustomConfig, details } = getActionDetails(data)
 
     // Launch action has source handle only (bottom)
@@ -102,9 +106,40 @@ function BrowserSessionAction({ data }: NodeProps<TBrowserAction>) {
     const isLaunch = data.name === 'launchBrowser'
     const isClose = data.name === 'closeBrowser'
 
+    const { setNodes } = useReactFlow()
+    const isLocked = useStore((state) => !state.nodesDraggable && !state.nodesConnectable) // Accessing the isLocked state from the store
+
+    const filterNodes = (nodeId: string) => {
+        if (isLocked) return // Prevent node deletion when the graph is locked
+        setNodes((prevNodes) => prevNodes.filter((node) => node.id !== nodeId))
+    }
+
+    const selectedNodeId = useSelector(selectSelectedNode)
+    const selectedNodeData = useSelector(selectSelectedNodeData)
+
+    const dispatch = useDispatch()
+
+    const isSelected = selectedNodeId === id && selectedNodeData && selectedNodeData.type === 'browserAction'
+
+    const clickHandler = () => {
+        dispatch(updateSelectedNode(id))
+        dispatch(updateSelectedData({ action: data, type: 'browserAction' }))
+        dispatch(setInspector(true))
+    }
+
     return (
         <TooltipProvider>
             <div className="relative group">
+                {/* Close Button - Always visible */}
+                {!isLocked && (
+                    <div className="nodrag nopan absolute -top-2 -right-2 z-10">
+                        <button
+                            className="flex items-center justify-center w-6 h-6 rounded-full bg-red-500 text-white shadow-md hover:bg-red-600 transition-all hover:scale-110"
+                            onClick={() => filterNodes(id)}>
+                            <X size={14} />
+                        </button>
+                    </div>
+                )}
                 {/* Source Handle (Bottom) - Only for Launch action */}
                 {isLaunch && (
                     <Handle
@@ -124,7 +159,9 @@ function BrowserSessionAction({ data }: NodeProps<TBrowserAction>) {
                 )}
 
                 {/* Main Card - removed shadow classes */}
-                <Card className="w-70 transition-all">
+                <Card
+                    className={`w-70 transition-all ${isSelected ? 'shadow-lg shadow-primary/50 ring-2 ring-primary ring-offset-2' : ''}`}
+                    onClick={clickHandler}>
                     <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
                         <div className="flex items-center gap-2">
                             {/* Browser Icon - always chrome icon */}

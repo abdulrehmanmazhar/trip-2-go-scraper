@@ -10,9 +10,9 @@ export function AppSidebarFooter() {
     const { theme, setTheme } = useTheme()
 
     const user = {
-        name: 'Abdur Rahman',
+        name: 'Tayyab Tehseen',
         avatar: {
-            url: 'https://avatars.githubusercontent.com/u/99640650?v=4&size=64'
+            url: 'https://img.freepik.com/free-photo/closeup-shot-purple-flower_181624-25863.jpg'
         }
     }
 
