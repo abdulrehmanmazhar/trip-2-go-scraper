@@ -10,8 +10,15 @@ export const runCodegen = async (id: string) => {
         await platform.filesystem.createDirectory(targetFolder)
     }
 
+    const playwrightPath = await platform.filesystem.getAbsolutePath(`${window.NL_PATH}/playwright/cli.js`)
+    const nodePath = await platform.filesystem.getAbsolutePath(`${window.NL_PATH}/node/node.exe`)
+
+    console.log({ playwrightPath, nodePath })
+
+    const wrapPath = (path: string) => `"${path}"`
+
     const process = await platform.os.spawnProcess(
-        `npx playwright codegen --target=jsonl -o actions.jsonl --channel=chrome --save-har=network_log.har`,
+        `${wrapPath(nodePath)} ${wrapPath(playwrightPath)} codegen --target=jsonl -o actions.jsonl --channel=chrome --save-har=network_log.har`,
         {
             cwd: targetFolder
         }
