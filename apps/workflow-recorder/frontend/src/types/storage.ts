@@ -23,3 +23,8 @@ export type TWorkflowGraph = {
         type: string
     }[]
 }
+
+export type TSettings = {
+    sessionType: 'persistent' | 'temporary'
+    persistencePath?: string
+}

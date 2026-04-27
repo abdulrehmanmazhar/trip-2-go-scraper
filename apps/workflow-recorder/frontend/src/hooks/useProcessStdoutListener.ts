@@ -11,7 +11,6 @@ const useProcessStdoutListener = () => {
 
     const processListener = (event: { detail: { id: number; action: 'stdOut' | 'stdErr' | 'exit'; data: string } }) => {
         const allProcesses = store.getState().process.processes
-        console.log(event)
         if (event.detail.action === 'stdOut') {
             if (!allProcesses.some((p) => p.id === event.detail.id)) return
             // dispatch(addProcess({ id: event.detail.id, name: 'unknown',  }))

@@ -35,12 +35,14 @@ export function AppSidebarContent() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
 
-                        <SidebarMenuItem>
-                            <SidebarMenuButton>
-                                <Settings />
-                                <span>Settings</span>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
+                        <Link to={'/setting'}>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton>
+                                    <Settings />
+                                    <span>Settings</span>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </Link>
                     </SidebarMenu>
                 </SidebarGroupContent>
             </SidebarGroup>

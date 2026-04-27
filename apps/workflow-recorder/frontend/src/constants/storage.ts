@@ -1,3 +1,4 @@
 export const StorageModels = {
-    workflows: 'workflows'
+    workflows: 'workflows',
+    settings: 'settings'
 } as const

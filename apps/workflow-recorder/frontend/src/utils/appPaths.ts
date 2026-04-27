@@ -27,3 +27,7 @@ export async function checkPathExists(path: string) {
         return false
     }
 }
+
+export const getAppPath = async () => {
+    return platform.filesystem.getAbsolutePath(window.NL_PATH)
+}

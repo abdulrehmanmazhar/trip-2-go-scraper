@@ -1,6 +1,6 @@
 import { StorageModels } from '@/constants/storage'
 import { platform } from './platform'
-import type { TWorkflow, TWorkflowGraph } from '@/types/storage'
+import type { TSettings, TWorkflow, TWorkflowGraph } from '@/types/storage'
 
 export const getCollections = async () => {
     try {
@@ -33,4 +33,15 @@ export const getWorkflowGraphById = async (id: string) => {
 
 export const setWorkflowGraph = async (id: string, workflowGraph: TWorkflowGraph) => {
     await platform.storage.setData(id, JSON.stringify(workflowGraph))
+}
+
+export const getStorageSettings = async () => {
+    const allCollections = await getCollections()
+    if (!allCollections.some((str) => str === StorageModels['settings'])) return null
+    const stringified = await platform.storage.getData(StorageModels['settings'])
+    return JSON.parse(stringified) as TSettings
+}
+export const setStorageSettings = async (settings: TSettings) => {
+    const stringified = JSON.stringify(settings)
+    await platform.storage.setData(StorageModels['settings'], stringified)
 }

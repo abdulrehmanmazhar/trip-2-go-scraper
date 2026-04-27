@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom'
 import NotFound from '@/pages/NotFound'
 import Home from '@/pages/Home'
 import Recorder from '@/pages/Recorder'
+import SettingsPage from '@/pages/Setting'
 // import ShadcnSidebarLayout from '@/components/features/layout'
 
 const Router = () => {
@@ -18,6 +19,10 @@ const Router = () => {
             <Route
                 path="/recorder/:id"
                 element={<Recorder />}
+            />
+            <Route
+                path="/setting"
+                element={<SettingsPage />}
             />
             <Route
                 path="*"
