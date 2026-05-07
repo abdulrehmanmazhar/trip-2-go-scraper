@@ -1,0 +1,18 @@
+{
+    "name": "dashboard-build",
+    "version": "1.0.0",
+    "description": "",
+    "main": "dist/index.js",
+    "type": "module",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "dist": "tsc -b",
+        "start": "node .",
+        "dev": "tsc -b --watch"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "figgo-runner": "^1.1.0"
+    }
+}

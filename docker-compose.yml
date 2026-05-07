@@ -1,0 +1,74 @@
+version: '3.9'
+
+services:
+    dashboard-backend:
+        build:
+            context: ./apps/dashboard-backend
+            dockerfile: docker/Dockerfile
+        image: trip-2-go-dashboard-backend:latest
+        env_file:
+            - ./apps/dashboard-backend/.env.production
+        networks:
+            - dashboard
+        depends_on:
+            - mongodb
+            - minio
+
+    dashboard-frontend:
+        build:
+            context: ./apps/dashboard-client
+            dockerfile: docker/Dockerfile
+        image: trip-2-go-dashboard-frontend:latest
+        networks:
+            - dashboard
+        depends_on:
+            - dashboard-backend
+
+    nginx:
+        image: nginx:stable-alpine
+        container_name: dashboard-nginx
+        restart: unless-stopped
+        ports:
+            - '8080:80'
+        volumes:
+            - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+        networks:
+            - dashboard
+        depends_on:
+            - dashboard-frontend
+            - dashboard-backend
+            - minio
+
+    mongodb:
+        image: mongo:7.0
+        container_name: dashboard-mongodb
+        restart: unless-stopped
+        volumes:
+            - mongo-data:/data/db
+        networks:
+            - dashboard
+        command: ['--bind_ip_all']
+
+    minio:
+        image: minio/minio:latest
+        container_name: dashboard-minio
+        restart: unless-stopped
+        command: server /data --console-address ":9001"
+        environment:
+            MINIO_ROOT_USER: minioadmin
+            MINIO_ROOT_PASSWORD: minioadmin
+        volumes:
+            - minio-data:/data
+        networks:
+            - dashboard
+        expose:
+            - '9000'
+            - '9001'
+
+networks:
+    dashboard:
+        driver: bridge
+
+volumes:
+    mongo-data:
+    minio-data:

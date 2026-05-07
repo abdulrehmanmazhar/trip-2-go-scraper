@@ -1,0 +1,30 @@
+# Exclude environment files for security
+.env*
+!.env.example
+
+# Exclude node_modules (will be installed in container)
+node_modules
+
+# Exclude logs
+logs/
+
+# Exclude development files
+*.log
+*.tmp
+.DS_Store
+
+# Exclude source code (only dist will be copied)
+src/
+
+# Exclude test files
+test/
+
+# Exclude config files not needed in container
+eslint.config.mjs
+tsconfig.json
+
+# Exclude public assets if served statically (adjust if needed)
+# public/
+
+# Exclude scripts not needed in production
+script/
