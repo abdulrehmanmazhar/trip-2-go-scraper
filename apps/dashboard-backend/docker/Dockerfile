@@ -1,23 +1,31 @@
 # Build stage
-FROM node:18-alpine AS builder
+FROM node:22-alpine AS builder
 
 # Set working directory
 WORKDIR /app
 
+# Copy configs for local packages
+COPY configs ./configs
+
+# Set working directory
+WORKDIR /app/level1/level2
+
 # Copy package files
-COPY package*.json ./
+COPY apps/dashboard-backend/package*.json ./
 
 # Install all dependencies
-RUN npm ci --only=production=false
+RUN npm install
 
 # Copy source code
-COPY . .
+COPY apps/dashboard-backend .
 
 # Build the application
 RUN npm run dist
 
+RUN npm run postDist
+
 # Production stage
-FROM node:18-alpine
+FROM node:22-alpine
 
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init
@@ -29,13 +37,13 @@ RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
 WORKDIR /app
 
 # Copy package files
-COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/level1/level2/package*.json ./
 
 # Copy production dependencies
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/level1/level2/node_modules ./node_modules
 
 # Copy built application
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/level1/level2/dist ./dist
 
 # Change ownership to non-root user
 RUN chown -R nodejs:nodejs /app

@@ -3,8 +3,8 @@ version: '3.9'
 services:
     dashboard-backend:
         build:
-            context: ./apps/dashboard-backend
-            dockerfile: docker/Dockerfile
+            context: .
+            dockerfile: apps/dashboard-backend/docker/Dockerfile
         image: trip-2-go-dashboard-backend:latest
         env_file:
             - ./apps/dashboard-backend/.env.production
@@ -16,8 +16,8 @@ services:
 
     dashboard-frontend:
         build:
-            context: ./apps/dashboard-client
-            dockerfile: docker/Dockerfile
+            context: .
+            dockerfile: apps/dashboard-client/docker/Dockerfile
         image: trip-2-go-dashboard-frontend:latest
         networks:
             - dashboard

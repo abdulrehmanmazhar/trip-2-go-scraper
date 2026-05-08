@@ -1,7 +1,7 @@
 export default {
     NAME: 'FIGGO ATLAS',
     LOGO_SRC: 'https://trip2go.co.uk/logo.png',
-    BACKEND_LINK: 'http://localhost:4000',
+    BACKEND_LINK: 'https://api.figgolabs.com',
     API_VERSION: '/api/v1',
     T_AND_C_PAGE: 'https://trip2go.co.uk/privacy-policy/',
     PRIVACY_POLICY_PAGE: 'https://trip2go.co.uk/privacy-policy/',

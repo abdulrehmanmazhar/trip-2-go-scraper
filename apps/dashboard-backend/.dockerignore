@@ -19,9 +19,6 @@ src/
 # Exclude test files
 test/
 
-# Exclude config files not needed in container
-eslint.config.mjs
-tsconfig.json
 
 # Exclude public assets if served statically (adjust if needed)
 # public/

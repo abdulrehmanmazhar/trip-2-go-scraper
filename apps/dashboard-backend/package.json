@@ -10,8 +10,9 @@
         "@types/ejs": "^3.1.5",
         "@types/jsonwebtoken": "^9.0.10",
         "@types/nodemailer": "^7.0.11",
-        "eslint-config": "^1.0.0",
-        "ts-config": "^1.0.0"
+        "typescript": "^5.9.3",
+        "eslint-config": "file:../../configs/eslint-config",
+        "ts-config": "file:../../configs/ts-config"
     },
     "dependencies": {
         "bcryptjs": "^3.0.3",
@@ -32,6 +33,7 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "dist": "tsc -b",
+        "postDist": "cp -r src/mails dist/mails",
         "start": "cross-env NODE_ENV=production node .",
         "dev": "cross-env NODE_ENV=development tsx watch src/server.ts"
     },

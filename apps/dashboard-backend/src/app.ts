@@ -7,12 +7,24 @@ import responseMessage from './constant/responseMessage.js'
 import httpError from './util/httpError.js'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
+import { allowedOrigins } from './constant/application.js'
 const app: Application = express()
 
 // Middleware
 app.use(express.json())
 app.use(express.static(path.join(import.meta.dirname, '../', 'public')))
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }))
+app.use(
+    cors({
+        origin: function (origin, callback) {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true)
+            } else {
+                callback(new Error('Not allowed by CORS'))
+            }
+        },
+        credentials: true
+    })
+)
 app.use(cookieParser())
 
 // Routes
