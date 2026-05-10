@@ -21,7 +21,12 @@ export const APIS = {
     LOGOUT: '/logout',
     GOOGLE_AUTH_LINK: '/get-google-auth-url',
     GOOGLE_CALLBACK: '/google-callback',
-    BOT_VERIFY: '/verify-otp'
+    BOT_VERIFY: '/verify-otp',
+    BOT_LIST: '/bots',
+    BOT_APPROVE: '/approve-bot',
+    BOT_REJECT: '/reject-bot',
+    BOT_REVOKE: '/revoke-bot',
+    BOT_UNREVOKE: '/unrevoke-bot'
 }
 
 export const ROUTES = {

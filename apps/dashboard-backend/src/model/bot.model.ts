@@ -12,6 +12,10 @@ export interface IBot extends Document {
 
     status: 'pending' | 'approved' | 'rejected'
 
+    /** When true, an approved bot is blocked from platform access until re-approved or record removed. */
+    isRevoked: boolean
+    revokedAt?: Date
+
     otpHash: string
     otpExpiresAt: Date
     isOtpVerified: boolean
@@ -39,6 +43,9 @@ const BotSchema = new Schema<IBot>(
             enum: ['pending', 'approved', 'rejected'],
             default: 'pending'
         },
+
+        isRevoked: { type: Boolean, default: false },
+        revokedAt: Date,
 
         otpHash: { type: String, required: true },
         otpExpiresAt: { type: Date, required: true },

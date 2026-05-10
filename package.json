@@ -52,6 +52,7 @@
         "apps/workflow-recorder/backend",
         "apps/workflow-recorder/cli",
         "scripts/dashboard-build",
-        "scripts/workflows"
+        "scripts/workflows",
+        "packages/ws-core"
     ]
 }
