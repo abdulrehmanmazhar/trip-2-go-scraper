@@ -20,7 +20,8 @@ export const APIS = {
     UPDATE_ACCESS_TOKEN: '/refresh',
     LOGOUT: '/logout',
     GOOGLE_AUTH_LINK: '/get-google-auth-url',
-    GOOGLE_CALLBACK: '/google-callback'
+    GOOGLE_CALLBACK: '/google-callback',
+    BOT_VERIFY: '/verify-otp'
 }
 
 export const ROUTES = {
@@ -31,6 +32,7 @@ export const ROUTES = {
     RESET_PASSWORD: '/auth/reset-password',
     OTP: '/auth/otp',
     UNAUTHORIZED: '/auth/unauthorized',
+    SUCCESS: '/success',
 
     // User App (Prefixed with /u)
     USER: {

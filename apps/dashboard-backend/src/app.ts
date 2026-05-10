@@ -2,6 +2,7 @@ import express, { type Application } from 'express'
 import path from 'path'
 import router from './router/apiRouter.js'
 import userRouter from './router/user.router.js'
+import botRouter from './router/bot.router.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
 import responseMessage from './constant/responseMessage.js'
 import httpError from './util/httpError.js'
@@ -28,7 +29,7 @@ app.use(
 app.use(cookieParser())
 
 // Routes
-app.use('/api/v1', router, userRouter)
+app.use('/api/v1', router, userRouter, botRouter)
 
 // 404 handler
 app.use((req, _res, next) => {

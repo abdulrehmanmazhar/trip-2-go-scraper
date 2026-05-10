@@ -1,5 +1,6 @@
 export default {
     SUCCESS: 'The operation has been successful',
+    PENDING: 'The operation is pending, please wait',
     SOMETHING_WENT_WRONG: 'Something went wrong, please try again later',
     NOT_FOUND: (entity: string) => `${entity} not found`
 }

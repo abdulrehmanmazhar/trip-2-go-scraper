@@ -5,6 +5,7 @@ import UserAppRouter from './app/UserAppRouter'
 import { adminGuard, authGuard } from './auth-gaurd'
 import NotFound from '@/pages/NotFound'
 import AuthRouter from './auth'
+import VerifyBot from '@/pages/VerifyBot'
 
 export const router = createBrowserRouter([
     {
@@ -24,6 +25,10 @@ export const router = createBrowserRouter([
                 <AdminAppRouter />
             </ShadcnSidebarLayout>
         )
+    },
+    {
+        path: '/verify-bot/:botId',
+        element: <VerifyBot />
     },
     {
         path: '/',
