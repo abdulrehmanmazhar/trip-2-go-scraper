@@ -1,12 +1,10 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import WebSocket from 'ws'
+import { FiggoClient } from 'ws-core'
 import { appRoot } from '../constant/application.js'
 
 export async function handleStart() {
     const configPath = path.join(appRoot, 'bot.json')
-
-    // console.log('🚀 Starting bot...')
 
     let raw: string
     try {
@@ -23,28 +21,54 @@ export async function handleStart() {
 
     const wsUrl = config.serverUrl.replace('http', 'ws') + '/ws'
 
-    const ws = new WebSocket(wsUrl)
+    const client = new FiggoClient({
+        url: wsUrl,
+        botId: config.botId,
+        privateKey: config.privateKey
+    })
 
-    ws.on('open', () => {
-        // console.log('✅ Connected to server')
+    // 🧠 Task execution handler (server → bot)
+    client.handle('task:run', (payload) => {
+        process.stdout.write(`⚙️ Running task: ${JSON.stringify(payload)}\n`)
 
-        ws.send(
-            JSON.stringify({
-                type: 'hello',
-                botId: config.botId
+        // simulate execution result
+        return {
+            success: true,
+            output: 'Task executed successfully',
+            received: payload
+        }
+    })
+
+    try {
+        await client.connect()
+
+        setInterval(() => {
+            client.sendEvent('bot:connected', { botId: config.botId })
+            client.request('save:data', { data: 'Hello, world!' }).then((res) => {
+                console.log('Save data response:', res)
             })
-        )
-    })
+        }, 1000)
 
-    ws.on('message', (data) => {
-        // const msg = data.toString()
-    })
+        process.stdout.write('✅ Bot connected to server\n')
+    } catch (err) {
+        process.stderr.write(`❌ Connection failed: ${(err as Error).message}\n`)
+        process.exit(1)
+    }
 
-    ws.on('close', () => {
-        // console.log('❌ Disconnected from server')
-    })
+    const shutdown = async () => {
+        process.stdout.write('\n🛑 Shutting down bot...\n')
 
-    ws.on('error', (err) => {
-        // console.error('WebSocket error:', err)
-    })
+        try {
+            await client.request('bot:disconnected', {
+                botId: config.botId,
+                timestamp: Date.now()
+            })
+        } catch {}
+
+        client.disconnect()
+        process.exit(0)
+    }
+
+    process.on('SIGINT', shutdown)
+    process.on('SIGTERM', shutdown)
 }
