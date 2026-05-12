@@ -11,3 +11,9 @@ export type TClient = {
     endDate: string
     tag: string
 }
+
+// export enum BotCommands
+type RunTask = { handler: 'runTask'; payload: { task: string } }
+type disconnect = { handler: 'disconnect'; payload: null }
+
+export type BotCommand = RunTask | disconnect

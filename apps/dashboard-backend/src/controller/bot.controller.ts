@@ -4,6 +4,7 @@ import { BotModel } from '../model/bot.model.js'
 import httpError from '../util/httpError.js'
 import httpResponse from '../util/httpResponse.js'
 import responseMessage from '../constant/responseMessage.js'
+import { botService } from '../service/botService.js'
 
 export default {
     async listBots(req: Request, res: Response, _next: NextFunction) {
@@ -166,6 +167,8 @@ export default {
         bot.isRevoked = true
         bot.revokedAt = new Date()
         await bot.save()
+
+        botService.disconnect(botId)
 
         return httpResponse(req, res, 200, responseMessage.SUCCESS, { message: 'Bot access revoked' })
     },

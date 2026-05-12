@@ -1,3 +1,5 @@
+import { disconnect } from 'node:cluster'
+
 export type ActionName =
     | 'check'
     | 'click'
@@ -200,4 +202,16 @@ export type InturrptionAction = {
         selector: string
         attr: 'visible' | 'hidden'
     }
+}
+
+type RunTask = { handler: 'runTask'; payload: { task: string } }
+type disconnect = { handler: 'disconnect'; payload: null }
+
+export type BotCommand = RunTask | disconnect
+export type Handlers = BotCommand['handler']
+export type Payloads = BotCommand['payload']
+
+export interface BotEvents {
+    disconnect: disconnect
+    runTask: RunTask
 }
