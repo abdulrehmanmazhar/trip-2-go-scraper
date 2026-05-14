@@ -9,8 +9,9 @@
         "format:check": "prettier --ignore-path .prettierignore --check \"**/*.{js,jsx,ts,tsx,json,css,scss,md,html,yml,yaml}\"",
         "format:fix": "prettier --ignore-path .prettierignore --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md,html,yml,yaml}\"",
         "build:dashboard": "npm run start --workspace=scripts/dashboard-build",
-        "deploy:prod": "docker compose build -f prod-docker-compose.yml && docker compose up -f prod-docker-compose.yml -d",
-        "deploy:dev": "docker compose build -f dev-docker-compose.yml && docker compose up -f dev-docker-compose.yml -d"
+        "deploy:prod": "docker compose -f prod-docker-compose.yml up -d --build",
+        "deploy:dev": "docker compose -f dev-docker-compose.yml up -d --build",
+        "down:prod": "docker compose -f prod-docker-compose.yml down"
     },
     "lint-staged": {
         "*.{ts,tsx,js,jsx,json,css,scss,md}": [

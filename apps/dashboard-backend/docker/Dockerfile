@@ -1,59 +1,53 @@
+# -------------------
 # Build stage
+# -------------------
 FROM node:22-alpine AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Copy configs for local packages
+# Copy full monorepo structure
 COPY configs ./configs
+COPY packages ./packages
+COPY apps ./apps
 
-# Set working directory
-WORKDIR /app/level1/level2
+# Install only for dashboard-backend
+WORKDIR /app/apps/dashboard-backend
 
-# Copy package files
-COPY apps/dashboard-backend/package*.json ./
-
-# Install all dependencies
 RUN npm install
 
-# Copy source code
-COPY apps/dashboard-backend .
-
-# Build the application
+# Build
 RUN npm run dist
-
 RUN npm run postDist
 
+WORKDIR /app/packages/ws-core
+
+RUN npm install
+
+RUN npm run build
+
+
+# -------------------
 # Production stage
+# -------------------
 FROM node:22-alpine
 
-# Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init
-
-# Create a non-root user
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY --from=builder /app/level1/level2/package*.json ./
+# Copy ONLY needed parts
+COPY --from=builder /app/apps/dashboard-backend ./apps/dashboard-backend
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/configs ./configs
 
-# Copy production dependencies
-COPY --from=builder /app/level1/level2/node_modules ./node_modules
+WORKDIR /app/apps/dashboard-backend
 
-# Copy built application
-COPY --from=builder /app/level1/level2/dist ./dist
+RUN npm prune --omit=dev
 
-# Change ownership to non-root user
-RUN chown -R nodejs:nodejs /app
 USER nodejs
 
-# Expose the port
 EXPOSE 4000
 
-# Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
-
-# Start the application
 CMD ["npm", "start"]

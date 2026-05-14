@@ -1,9 +1,10 @@
 import * as Minio from 'minio'
 import { Readable } from 'node:stream'
+import config from '../config/config.js'
 
 export const minioClient = new Minio.Client({
-    endPoint: '127.0.0.1',
-    port: 9000,
+    endPoint: config.STORAGE_ENDPOINT!,
+    port: parseInt(config.STORAGE_PORT!, 10),
     useSSL: false,
     accessKey: 'minioadmin',
     secretKey: 'minioadmin'
