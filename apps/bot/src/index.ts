@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 // // import { getTools } from './utils/getTools.js'
 // // import { performTasks } from './utils/performTasks.js'
 // // import { spawnMCP } from './utils/spawnMCP.js'
