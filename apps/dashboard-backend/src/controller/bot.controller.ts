@@ -5,6 +5,7 @@ import httpError from '../util/httpError.js'
 import httpResponse from '../util/httpResponse.js'
 import responseMessage from '../constant/responseMessage.js'
 import { botService } from '../service/botService.js'
+import logger from '../util/logger.js'
 
 export default {
     async listBots(req: Request, res: Response, _next: NextFunction) {
@@ -168,7 +169,13 @@ export default {
         bot.revokedAt = new Date()
         await bot.save()
 
-        botService.disconnect(botId)
+        try {
+            botService.send(botId, 'disconnect', { reason: 'revoked' })
+        } catch (error) {
+            logger.info('BOT_DISCONNECTED', { meta: { botId, reason: 'revoked', error: error instanceof Error ? error.message : String(error) } })
+        }
+
+        botService.disconnect(botId, 'revoked')
 
         return httpResponse(req, res, 200, responseMessage.SUCCESS, { message: 'Bot access revoked' })
     },

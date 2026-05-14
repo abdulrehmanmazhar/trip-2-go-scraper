@@ -3,6 +3,7 @@ import path from 'path'
 import router from './router/apiRouter.js'
 import userRouter from './router/user.router.js'
 import botRouter from './router/bot.router.js'
+import workflowRouter from './router/workflow.router.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
 import responseMessage from './constant/responseMessage.js'
 import httpError from './util/httpError.js'
@@ -29,7 +30,7 @@ app.use(
 app.use(cookieParser())
 
 // Routes
-app.use('/api/v1', router, userRouter, botRouter)
+app.use('/api/v1', router, userRouter, botRouter, workflowRouter)
 
 // 404 handler
 app.use((req, _res, next) => {

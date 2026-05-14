@@ -9,6 +9,7 @@
         "@types/cors": "^2.8.19",
         "@types/ejs": "^3.1.5",
         "@types/jsonwebtoken": "^9.0.10",
+        "@types/multer": "^2.1.0",
         "@types/nodemailer": "^7.0.11",
         "eslint-config": "file:../../configs/eslint-config",
         "ts-config": "file:../../configs/ts-config",
@@ -25,7 +26,9 @@
         "ejs": "^4.0.1",
         "express": "^5.2.1",
         "jsonwebtoken": "^9.0.3",
+        "minio": "^8.0.7",
         "mongoose": "^9.2.1",
+        "multer": "^2.1.1",
         "nodemailer": "^8.0.1",
         "winston": "^3.19.0",
         "winston-mongodb": "^7.0.1",
@@ -36,7 +39,7 @@
         "dist": "tsc -b",
         "postDist": "cp -r src/mails dist/mails",
         "start": "cross-env NODE_ENV=production node .",
-        "dev": "cross-env NODE_ENV=development tsx watch src/server.ts"
+        "dev": "start \"MinIO Server\" \"C:\\Users\\ABDUL REHMAN\\Downloads\\minio.exe\" server \"C:\\Users\\ABDUL REHMAN\\Downloads\\minio\" --license \"C:\\Users\\ABDUL REHMAN\\Downloads\\minio\\minio.license\" && cross-env NODE_ENV=development tsx watch src/server.ts"
     },
     "keywords": [],
     "author": "",

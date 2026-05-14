@@ -1,7 +1,8 @@
-import { useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import ReactCountryFlag from 'react-country-flag'
 import Header from '@/components/features/header'
+import { ConfirmationModal } from '@/components/features/confirmation-modal'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -9,49 +10,40 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { EditIcon, Plus, Search, Play, MoreVertical, Trash2, Download, ExternalLink, ImageIcon, X, Upload, ArrowRight } from 'lucide-react'
+import {
+    EditIcon,
+    Plus,
+    Search,
+    Play,
+    MoreVertical,
+    Trash2,
+    Download,
+    ExternalLink,
+    ImageIcon,
+    X,
+    Upload,
+    ArrowRight,
+    RefreshCw,
+    ChevronLeft,
+    ChevronRight
+} from 'lucide-react'
 import { ROUTES } from '@/constants'
-import { WORKFLOW_COUNTRIES, type WorkflowCountry } from '@/constants/workflowCountries'
 import { cn } from '@/lib/utils'
+import {
+    deleteWorkflowRecord,
+    downloadWorkflowExport,
+    fetchCountries,
+    fetchWorkflowsPage,
+    patchWorkflow,
+    postImportWorkflow,
+    postWorkflow,
+    type CountryOption,
+    type WorkflowListData,
+    type WorkflowRecord
+} from '@/utils/workflowApi'
+import { toast } from 'sonner'
 
-type WorkflowItem = {
-    id: string
-    name: string
-    description: string
-    createdAt: string
-    thumbnail?: string
-    applicationCountry: WorkflowCountry
-    destinationCountry: WorkflowCountry
-}
-
-/** Placeholder list until workflows are loaded from the API */
-const SAMPLE_WORKFLOWS: WorkflowItem[] = [
-    {
-        id: '1',
-        name: 'Checkout flow',
-        description: 'E-commerce checkout automation.',
-        createdAt: '2026-04-12',
-        thumbnail: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=200&fit=crop',
-        applicationCountry: WORKFLOW_COUNTRIES.find((c) => c._id === 'country_pk')!,
-        destinationCountry: WORKFLOW_COUNTRIES.find((c) => c._id === 'country_it')!
-    },
-    {
-        id: '2',
-        name: 'Login & profile',
-        description: 'Sign-in and profile navigation.',
-        createdAt: '2026-04-28',
-        applicationCountry: WORKFLOW_COUNTRIES.find((c) => c._id === 'country_de')!,
-        destinationCountry: WORKFLOW_COUNTRIES.find((c) => c._id === 'country_fr')!
-    },
-    {
-        id: '3',
-        name: 'Invoice export',
-        description: 'Reports and CSV export steps.',
-        createdAt: '2026-05-01',
-        applicationCountry: WORKFLOW_COUNTRIES.find((c) => c._id === 'country_ae')!,
-        destinationCountry: WORKFLOW_COUNTRIES.find((c) => c._id === 'country_de')!
-    }
-]
+const PAGE_LIMIT = 9
 
 const emptyWorkflowForm = () => ({
     thumbnail: '',
@@ -71,14 +63,26 @@ function validateThumbnailUrl(url: string) {
     }
 }
 
-function CountryRowButton({ country, selected, onSelect }: { country: WorkflowCountry; selected: boolean; onSelect: (id: string) => void }) {
+function CountryRowButton({
+    country,
+    selected,
+    onSelect,
+    disabled
+}: {
+    country: CountryOption
+    selected: boolean
+    onSelect: (id: string) => void
+    disabled?: boolean
+}) {
     return (
         <button
             type="button"
+            disabled={disabled}
             onClick={() => onSelect(country._id)}
             className={cn(
                 'flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted/70',
-                selected && 'bg-muted'
+                selected && 'bg-muted',
+                disabled && 'opacity-50'
             )}>
             <ReactCountryFlag
                 countryCode={country.abbr}
@@ -91,25 +95,54 @@ function CountryRowButton({ country, selected, onSelect }: { country: WorkflowCo
     )
 }
 
-function CountryListField({ label, valueId, onChange }: { label: string; valueId: string; onChange: (id: string) => void }) {
+function CountryListField({
+    label,
+    valueId,
+    onChange,
+    countries,
+    disabled
+}: {
+    label: string
+    valueId: string
+    onChange: (id: string) => void
+    countries: CountryOption[]
+    disabled?: boolean
+}) {
     return (
         <div className="space-y-2">
             <label className="text-sm font-medium">{label}</label>
             <div className="max-h-44 overflow-y-auto rounded-md border border-border/60 divide-y divide-border/60 bg-background">
-                {WORKFLOW_COUNTRIES.map((c) => (
-                    <CountryRowButton
-                        key={c._id}
-                        country={c}
-                        selected={valueId === c._id}
-                        onSelect={onChange}
-                    />
-                ))}
+                {countries.length === 0 ? (
+                    <div className="px-3 py-4 text-sm text-muted-foreground">No countries available.</div>
+                ) : (
+                    countries.map((c) => (
+                        <CountryRowButton
+                            key={c._id}
+                            country={c}
+                            selected={valueId === c._id}
+                            onSelect={onChange}
+                            disabled={disabled}
+                        />
+                    ))
+                )}
             </div>
         </div>
     )
 }
 
-function WorkflowCard({ workflow: w, onEdit }: { workflow: WorkflowItem; onEdit: (workflow: WorkflowItem) => void }) {
+function WorkflowCard({
+    workflow: w,
+    onEdit,
+    onDelete,
+    onExport,
+    busy
+}: {
+    workflow: WorkflowRecord
+    onEdit: (workflow: WorkflowRecord) => void
+    onDelete: (workflow: WorkflowRecord) => void
+    onExport: (workflow: WorkflowRecord) => void
+    busy: boolean
+}) {
     const [thumbError, setThumbError] = useState(false)
     const hasThumb = Boolean(w.thumbnail) && !thumbError
 
@@ -147,7 +180,6 @@ function WorkflowCard({ workflow: w, onEdit }: { workflow: WorkflowItem; onEdit:
 
             <CardHeader className="px-4 py-3 space-y-2">
                 <h3 className="font-semibold text-sm leading-none truncate">{w.name}</h3>
-                {/* Same route treatment as UserApplications `ApplicationCard` */}
                 <div className="flex items-center gap-2 text-sm font-medium">
                     <span>{w.applicationCountry.name}</span>
                     <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-60" />
@@ -163,20 +195,27 @@ function WorkflowCard({ workflow: w, onEdit }: { workflow: WorkflowItem; onEdit:
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-8 w-8 p-0">
+                                className="h-8 w-8 p-0"
+                                disabled={busy}>
                                 <MoreVertical className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start">
-                            <DropdownMenuItem onSelect={() => onEdit(w)}>
+                            <DropdownMenuItem
+                                disabled={busy}
+                                onSelect={() => onEdit(w)}>
                                 <EditIcon className="mr-2 h-4 w-4" />
                                 Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem
+                                disabled={busy}
+                                onSelect={() => onDelete(w)}>
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Delete
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem
+                                disabled={busy}
+                                onSelect={() => void onExport(w)}>
                                 <Download className="mr-2 h-4 w-4" />
                                 Export
                             </DropdownMenuItem>
@@ -184,7 +223,11 @@ function WorkflowCard({ workflow: w, onEdit }: { workflow: WorkflowItem; onEdit:
                     </DropdownMenu>
 
                     <Link to={`${ROUTES.ADMIN.WORKFLOW_BUILDER}?id=${encodeURIComponent(w.id)}`}>
-                        <Button size="sm">Open</Button>
+                        <Button
+                            size="sm"
+                            disabled={busy}>
+                            Open
+                        </Button>
                     </Link>
                 </div>
             </CardContent>
@@ -192,35 +235,104 @@ function WorkflowCard({ workflow: w, onEdit }: { workflow: WorkflowItem; onEdit:
     )
 }
 
+type DeleteDialog = { open: false } | { open: true; workflow: WorkflowRecord }
+
 function Workflows() {
     const [search, setSearch] = useState('')
+    const [debouncedSearch, setDebouncedSearch] = useState('')
+    const [page, setPage] = useState(1)
+
+    const [countries, setCountries] = useState<CountryOption[]>([])
+    const [countriesLoading, setCountriesLoading] = useState(true)
+
+    const [list, setList] = useState<WorkflowListData | null>(null)
+    const [workflowsLoading, setWorkflowsLoading] = useState(true)
+    const [workflowsError, setWorkflowsError] = useState<string | null>(null)
+
     const [importOpen, setImportOpen] = useState(false)
     const [importFile, setImportFile] = useState<File | null>(null)
+    const [importBusy, setImportBusy] = useState(false)
     const importInputRef = useRef<HTMLInputElement>(null)
 
     const [formOpen, setFormOpen] = useState(false)
     const [editMode, setEditMode] = useState(false)
+    const [editingId, setEditingId] = useState<string | null>(null)
     const [form, setForm] = useState(emptyWorkflowForm)
+    const [formBusy, setFormBusy] = useState(false)
+    const defFileInputRef = useRef<HTMLInputElement>(null)
 
-    const filtered = useMemo(() => {
-        const q = search.trim().toLowerCase()
-        return SAMPLE_WORKFLOWS.filter((w) => {
-            const inName = w.name.toLowerCase().includes(q)
-            const inDesc = w.description.toLowerCase().includes(q)
-            const inApp = w.applicationCountry.name.toLowerCase().includes(q)
-            const inDest = w.destinationCountry.name.toLowerCase().includes(q)
-            return inName || inDesc || inApp || inDest
-        })
+    const [actingId, setActingId] = useState<string | null>(null)
+    const [deleteDialog, setDeleteDialog] = useState<DeleteDialog>({ open: false })
+
+    useEffect(() => {
+        const t = window.setTimeout(() => setDebouncedSearch(search.trim()), 350)
+        return () => window.clearTimeout(t)
     }, [search])
+
+    useEffect(() => {
+        setPage(1)
+    }, [debouncedSearch])
+
+    const loadCountries = useCallback(async () => {
+        setCountriesLoading(true)
+        try {
+            const data = await fetchCountries()
+            setCountries(data)
+        } catch (e) {
+            toast.error(e instanceof Error ? e.message : 'Failed to load countries')
+        } finally {
+            setCountriesLoading(false)
+        }
+    }, [])
+
+    const loadWorkflows = useCallback(async () => {
+        setWorkflowsLoading(true)
+        setWorkflowsError(null)
+        try {
+            const data = await fetchWorkflowsPage({ page, limit: PAGE_LIMIT, search: debouncedSearch })
+            setList(data)
+            if (data.total > 0 && page > data.totalPages) {
+                setPage(data.totalPages)
+            }
+        } catch (e) {
+            const msg = e instanceof Error ? e.message : 'Failed to load workflows'
+            setWorkflowsError(msg)
+            toast.error(msg)
+        } finally {
+            setWorkflowsLoading(false)
+        }
+    }, [page, debouncedSearch])
+
+    useEffect(() => {
+        void loadCountries()
+    }, [loadCountries])
+
+    useEffect(() => {
+        void loadWorkflows()
+    }, [loadWorkflows])
+
+    const total = list?.total ?? 0
+    const totalPages = list?.totalPages ?? 1
+    const items = list?.items ?? []
+
+    const rangeLabel = useMemo(() => {
+        if (total === 0) return '0 workflows'
+        const start = (page - 1) * PAGE_LIMIT + 1
+        const end = Math.min(page * PAGE_LIMIT, total)
+        return `${start}–${end} of ${total}`
+    }, [page, total])
 
     const openCreateModal = () => {
         setEditMode(false)
+        setEditingId(null)
         setForm(emptyWorkflowForm())
+        if (defFileInputRef.current) defFileInputRef.current.value = ''
         setFormOpen(true)
     }
 
-    const openEditModal = (w: WorkflowItem) => {
+    const openEditModal = (w: WorkflowRecord) => {
         setEditMode(true)
+        setEditingId(w.id)
         setForm({
             thumbnail: w.thumbnail ?? '',
             name: w.name,
@@ -228,22 +340,56 @@ function Workflows() {
             applicationCountryId: w.applicationCountry._id,
             destinationCountryId: w.destinationCountry._id
         })
+        if (defFileInputRef.current) defFileInputRef.current.value = ''
         setFormOpen(true)
     }
 
-    const handleFormSubmit = () => {
+    const handleFormSubmit = async () => {
         if (!form.name.trim()) return
         if (!form.applicationCountryId || !form.destinationCountryId) {
-            window.alert('Please select both application country and destination country.')
+            toast.error('Please select both application country and destination country.')
             return
         }
         if (form.thumbnail && !validateThumbnailUrl(form.thumbnail)) {
-            window.alert('Please enter a valid HTTPS URL ending with .jpg, .png, .gif, or .webp')
+            toast.error('Please enter a valid HTTPS URL ending with .jpg, .png, .gif, or .webp')
             return
         }
-        setFormOpen(false)
-        setForm(emptyWorkflowForm())
-        setEditMode(false)
+
+        const defFile = defFileInputRef.current?.files?.[0] ?? null
+
+        if (!editMode && !defFile) {
+            toast.error('Please attach a workflow definition JSON file.')
+            return
+        }
+
+        setFormBusy(true)
+        try {
+            const fd = new FormData()
+            fd.append('name', form.name.trim())
+            fd.append('description', form.description)
+            if (form.thumbnail.trim()) fd.append('thumbnail', form.thumbnail.trim())
+            fd.append('applicationCountryId', form.applicationCountryId)
+            fd.append('destinationCountryId', form.destinationCountryId)
+            if (defFile) fd.append('workflowFile', defFile)
+
+            if (editMode && editingId) {
+                await patchWorkflow(editingId, fd)
+                toast.success('Workflow updated')
+            } else {
+                await postWorkflow(fd)
+                toast.success('Workflow created')
+            }
+            setFormOpen(false)
+            setForm(emptyWorkflowForm())
+            setEditMode(false)
+            setEditingId(null)
+            if (defFileInputRef.current) defFileInputRef.current.value = ''
+            await loadWorkflows()
+        } catch (e) {
+            toast.error(e instanceof Error ? e.message : 'Request failed')
+        } finally {
+            setFormBusy(false)
+        }
     }
 
     const resetImportState = () => {
@@ -261,11 +407,54 @@ function Workflows() {
         setImportFile(file)
     }
 
-    const handleImportConfirm = () => {
+    const handleImportConfirm = async () => {
         if (!importFile) return
-        setImportOpen(false)
-        resetImportState()
+        setImportBusy(true)
+        try {
+            const fd = new FormData()
+            fd.append('workflowFile', importFile)
+            await postImportWorkflow(fd)
+            toast.success('Workflow imported')
+            setImportOpen(false)
+            resetImportState()
+            setPage(1)
+            await loadWorkflows()
+        } catch (e) {
+            toast.error(e instanceof Error ? e.message : 'Import failed')
+        } finally {
+            setImportBusy(false)
+        }
     }
+
+    const handleExport = async (w: WorkflowRecord) => {
+        setActingId(w.id)
+        try {
+            await downloadWorkflowExport(w.id, w.name)
+            toast.success('Download started')
+        } catch (e) {
+            toast.error(e instanceof Error ? e.message : 'Export failed')
+        } finally {
+            setActingId(null)
+        }
+    }
+
+    const runDelete = async () => {
+        if (!deleteDialog.open) return
+        const { workflow } = deleteDialog
+        setActingId(workflow.id)
+        try {
+            await deleteWorkflowRecord(workflow.id)
+            toast.success('Workflow deleted')
+            setDeleteDialog({ open: false })
+            await loadWorkflows()
+        } catch (e) {
+            toast.error(e instanceof Error ? e.message : 'Delete failed')
+        } finally {
+            setActingId(null)
+        }
+    }
+
+    const countriesDisabled = countriesLoading || countries.length === 0
 
     return (
         <div className="bg-background">
@@ -294,29 +483,86 @@ function Workflows() {
             />
 
             <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-                <div className="relative max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        className="pl-9"
-                        placeholder="Search workflows..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="relative max-w-sm w-full">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            className="pl-9"
+                            placeholder="Search workflows..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="shrink-0 gap-2 self-start sm:self-auto"
+                        disabled={workflowsLoading}
+                        onClick={() => void loadWorkflows()}>
+                        <RefreshCw className={cn('h-4 w-4', workflowsLoading && 'animate-spin')} />
+                        Refresh
+                    </Button>
                 </div>
 
-                {filtered.length === 0 ? (
+                {workflowsLoading && items.length === 0 ? (
+                    <div className="py-20 text-center text-sm text-muted-foreground">Loading workflows…</div>
+                ) : workflowsError && items.length === 0 ? (
+                    <div className="py-20 text-center space-y-3">
+                        <p className="text-sm text-muted-foreground">{workflowsError}</p>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => void loadWorkflows()}>
+                            Try again
+                        </Button>
+                    </div>
+                ) : items.length === 0 ? (
                     <div className="py-20 text-center text-sm text-muted-foreground">No workflows found.</div>
                 ) : (
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        {filtered.map((w) => (
+                        {items.map((w) => (
                             <WorkflowCard
                                 key={w.id}
                                 workflow={w}
+                                busy={actingId === w.id}
                                 onEdit={openEditModal}
+                                onExport={handleExport}
+                                onDelete={(wf) => setDeleteDialog({ open: true, workflow: wf })}
                             />
                         ))}
                     </div>
                 )}
+
+                {total > 0 ? (
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t border-border/60 pt-6">
+                        <p className="text-sm text-muted-foreground">Showing {rangeLabel}</p>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={page <= 1 || workflowsLoading}
+                                onClick={() => setPage((p) => Math.max(1, p - 1))}>
+                                <ChevronLeft className="h-4 w-4" />
+                                Previous
+                            </Button>
+                            <span className="text-sm tabular-nums text-muted-foreground px-2">
+                                Page {page} / {totalPages}
+                            </span>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={page >= totalPages || workflowsLoading}
+                                onClick={() => setPage((p) => p + 1)}>
+                                Next
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                ) : null}
             </div>
 
             <Dialog
@@ -328,13 +574,19 @@ function Workflows() {
                     </DialogHeader>
                     <div className="space-y-4">
                         <p className="text-sm text-muted-foreground">
-                            Choose a workflow JSON file. Upload to the server will run here once the API is wired; this dialog only manages the UI for
-                            now.
+                            Upload a <span className="font-medium text-foreground">.workflow</span> bundle (JSON). It must include{' '}
+                            <code className="text-xs bg-muted px-1 rounded">version</code> (use{' '}
+                            <code className="text-xs bg-muted px-1 rounded">1</code>), <code className="text-xs bg-muted px-1 rounded">name</code>,{' '}
+                            <code className="text-xs bg-muted px-1 rounded">description</code>,{' '}
+                            <code className="text-xs bg-muted px-1 rounded">applicationCountry</code> and{' '}
+                            <code className="text-xs bg-muted px-1 rounded">destinationCountry</code> as MongoDB country{' '}
+                            <code className="text-xs bg-muted px-1 rounded">_id</code> strings, plus a{' '}
+                            <code className="text-xs bg-muted px-1 rounded">definition</code> object. No extra fields are required in this dialog.
                         </p>
                         <input
                             ref={importInputRef}
                             type="file"
-                            accept=".json,application/json"
+                            accept=".workflow,application/json"
                             className="sr-only"
                             onChange={handleImportFileChange}
                         />
@@ -359,9 +611,9 @@ function Workflows() {
                         </Button>
                         <Button
                             type="button"
-                            onClick={handleImportConfirm}
-                            disabled={!importFile}>
-                            Import
+                            onClick={() => void handleImportConfirm()}
+                            disabled={!importFile || importBusy}>
+                            {importBusy ? 'Importing…' : 'Import'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -374,6 +626,8 @@ function Workflows() {
                     if (!open) {
                         setForm(emptyWorkflowForm())
                         setEditMode(false)
+                        setEditingId(null)
+                        if (defFileInputRef.current) defFileInputRef.current.value = ''
                     }
                 }}>
                 <DialogContent className="sm:max-w-lg max-h-[min(90vh,720px)] overflow-y-auto">
@@ -424,12 +678,16 @@ function Workflows() {
                             label="Application country"
                             valueId={form.applicationCountryId}
                             onChange={(applicationCountryId) => setForm({ ...form, applicationCountryId })}
+                            countries={countries}
+                            disabled={countriesDisabled}
                         />
 
                         <CountryListField
                             label="Destination country"
                             valueId={form.destinationCountryId}
                             onChange={(destinationCountryId) => setForm({ ...form, destinationCountryId })}
+                            countries={countries}
+                            disabled={countriesDisabled}
                         />
 
                         <Input
@@ -443,6 +701,23 @@ function Workflows() {
                             value={form.description}
                             onChange={(e) => setForm({ ...form, description: e.target.value })}
                         />
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">
+                                {editMode ? 'Replace workflow JSON (optional)' : 'Workflow definition JSON (required)'}
+                            </label>
+                            <input
+                                ref={defFileInputRef}
+                                type="file"
+                                accept=".json,application/json"
+                                className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-border file:bg-background file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                {editMode
+                                    ? 'Leave empty to keep the current definition in storage. If you attach a file, it replaces the stored definition.'
+                                    : 'The JSON you upload is stored as the workflow definition and combined with the details above.'}
+                            </p>
+                        </div>
                     </div>
 
                     <DialogFooter>
@@ -454,13 +729,29 @@ function Workflows() {
                         </Button>
                         <Button
                             type="button"
-                            onClick={handleFormSubmit}
-                            disabled={!form.name.trim() || !form.applicationCountryId || !form.destinationCountryId}>
-                            {editMode ? 'Update' : 'Create'}
+                            onClick={() => void handleFormSubmit()}
+                            disabled={formBusy || !form.name.trim() || !form.applicationCountryId || !form.destinationCountryId || countriesDisabled}>
+                            {formBusy ? 'Saving…' : editMode ? 'Update' : 'Create'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <ConfirmationModal
+                open={deleteDialog.open}
+                onOpenChange={(open) => {
+                    if (!open) setDeleteDialog({ open: false })
+                }}
+                title="Delete this workflow?"
+                description={
+                    deleteDialog.open ? `Permanently remove “${deleteDialog.workflow.name}” and its stored definition. This cannot be undone.` : ''
+                }
+                type="destructive"
+                confirmLabel="Delete"
+                onConfirmation={() => void runDelete()}
+                onCancel={() => setDeleteDialog({ open: false })}
+                pending={deleteDialog.open && actingId === deleteDialog.workflow.id}
+            />
         </div>
     )
 }

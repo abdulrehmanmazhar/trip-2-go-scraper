@@ -8,7 +8,7 @@ export class RequestManager {
     private readonly pending = new Map<string, Pending>()
     private readonly defaultTimeoutMs: number
 
-    constructor(defaultTimeoutMs = 60_000) {
+    constructor(defaultTimeoutMs = 600_000) {
         this.defaultTimeoutMs = defaultTimeoutMs
     }
 

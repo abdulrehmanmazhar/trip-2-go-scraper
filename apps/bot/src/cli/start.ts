@@ -9,6 +9,7 @@ import { runTaskHandler } from '../handlers/runTask.js'
 import { getMachineInfo, getProcessStats, getQuickHealth } from '../utils/process.js'
 import { runAsyncLoop } from '../utils/runAsyncLoop.js'
 import { connectionRefresh } from '../utils/connectionRefresh.js'
+import { fetchCountriesSyncPayload } from '../handlers/syncCountries.js'
 
 export async function handleStart() {
     const configPath = path.join(appRoot, 'bot.json')
@@ -66,6 +67,18 @@ export async function handleStart() {
     client.handle('machineHealth', getQuickHealth)
 
     client.handle('processHealth', () => getProcessStats(process.pid))
+
+    await new Promise<void>((resolve) => setTimeout(resolve, 2000))
+
+    try {
+        const syncCountries = await fetchCountriesSyncPayload()
+        const countrySyncResult = await client.request('updateCountryList', syncCountries)
+        logger.info('COUNTRIES_SYNC', {
+            meta: { result: countrySyncResult, count: syncCountries.countries.length }
+        })
+    } catch (err) {
+        logger.warn('COUNTRIES_SYNC_FAILED', { meta: { error: err as Error } })
+    }
 
     await runAsyncLoop(() => connectionRefresh(client), {
         intervalMs: 1 * 60 * 1000, // ping every 1 minute

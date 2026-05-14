@@ -3,6 +3,7 @@ import config from './config/config.js'
 import databaseService from './service/databaseService.js'
 import { createFiggoServer } from './service/botService.js'
 import logger from './util/logger.js'
+import { ensureWorkflowsBucket, minioClient } from './service/storageService.js'
 
 const server = app.listen(config.PORT)
 
@@ -17,6 +18,30 @@ const main = async () => {
             meta: {
                 DATABASE_NAME: connect,
                 TYPE: 'mongodb'
+            }
+        })
+
+        const bucketExists = await minioClient.bucketExists('tript-2-go')
+
+        if (!bucketExists) {
+            await minioClient.makeBucket('tript-2-go')
+            logger.info(`MINIO BUCKET CREATED`, {
+                meta: {
+                    BUCKET_NAME: 'tript-2-go'
+                }
+            })
+        } else {
+            logger.info(`MINIO BUCKET EXISTS`, {
+                meta: {
+                    BUCKET_NAME: 'tript-2-go'
+                }
+            })
+        }
+
+        await ensureWorkflowsBucket()
+        logger.info(`MINIO WORKFLOWS BUCKET READY`, {
+            meta: {
+                BUCKET_NAME: 'workflows'
             }
         })
 

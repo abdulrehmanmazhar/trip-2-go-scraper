@@ -1,3 +1,4 @@
+import { updateCountryList } from '../handler/updateCountryList.js'
 import { BotModel } from '../model/bot.model.js'
 import { FiggoServer } from 'ws-core'
 
@@ -15,4 +16,6 @@ export function registerHandlers(server: FiggoServer) {
     server.handle('ping', (payload) => {
         return payload
     })
+
+    server.handle('updateCountryList', updateCountryList)
 }

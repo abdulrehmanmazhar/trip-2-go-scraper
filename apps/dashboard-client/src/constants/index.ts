@@ -26,7 +26,10 @@ export const APIS = {
     BOT_APPROVE: '/approve-bot',
     BOT_REJECT: '/reject-bot',
     BOT_REVOKE: '/revoke-bot',
-    BOT_UNREVOKE: '/unrevoke-bot'
+    BOT_UNREVOKE: '/unrevoke-bot',
+    COUNTRIES: '/countries',
+    WORKFLOWS: '/workflows',
+    WORKFLOWS_IMPORT: '/workflows/import'
 }
 
 export const ROUTES = {
