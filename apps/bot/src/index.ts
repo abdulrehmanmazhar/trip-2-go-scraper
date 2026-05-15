@@ -25,7 +25,8 @@
 // }
 
 import { Command } from 'commander'
-import { handleLogin } from './cli//login.js'
+import { handleDemo } from './cli/demo.js'
+import { handleLogin } from './cli/login.js'
 import { handleStart } from './cli/start.js'
 import logger from './utils/logger.js'
 
@@ -45,6 +46,22 @@ program
             await handleLogin()
         } catch (err) {
             logger.error('LOGIN_ERROR', { meta: err as Error })
+            process.exit(1)
+        }
+    })
+
+// ----------------------
+// DEMO COMMAND
+// ----------------------
+program
+    .command('demo')
+    .description('Run the bundled YouTube workflow demo (JSON-driven Playwright automation)')
+    .option('-w, --workflow <path>', 'Path to a workflow JSON file (default: workflows/youtube_workflow.json)')
+    .action(async (opts: { workflow?: string }) => {
+        try {
+            await handleDemo(opts.workflow)
+        } catch (err) {
+            logger.error('DEMO_ERROR', { meta: err as Error })
             process.exit(1)
         }
     })

@@ -22,7 +22,7 @@ import type { JSONSchemaType } from 'ajv'
 
 type Action = BotActions
 
-type RuntimeConfig = {
+export type RuntimeConfig = {
     userDataDir: string
     launch: {
         // 🔹 Core
@@ -211,8 +211,9 @@ export class PlaywrightWorker {
 
     // private context!: CreateContext
 
-    constructor(browser: BrowserContext) {
+    constructor(browser: BrowserContext, config: RuntimeConfig) {
         this.browser = browser
+        this.config = config
     }
 
     getPage(pageGuid: string) {
@@ -357,7 +358,7 @@ export class PlaywrightWorker {
         this.pages.delete(action.pageGuid)
     }
 
-    runPlaywrightAction(action: Action) {
+    async runPlaywrightAction(action: Action) {
         switch (action.name) {
             case 'check':
                 return this.check(action)
@@ -404,7 +405,13 @@ export class NetworkInterceptorWorker {
     requests!: unknown[]
     responses!: unknown[]
 
-    constructor(context: CreateContext) {
+    constructor(context: {
+        playwright: PlaywrightWorker
+        config: RuntimeConfig
+        requests: unknown[]
+        responses: unknown[]
+        environment: Record<string, unknown>
+    }) {
         this.browser = context.playwright.browser
         this.rules = context.config.networkInterception
         this.requests = context.requests
@@ -412,15 +419,13 @@ export class NetworkInterceptorWorker {
     }
 
     satisfiesCriteria(params: RuntimeConfig['networkInterception'][0]) {
+        if (!this.rules.length) return false
+
         for (const rule of this.rules) {
             if (!params.url.includes(rule.url)) continue
-
             if (params.action !== rule.action) continue
-
             if (params.type !== rule.type) continue
-
-            if (matchSchema(params.body, rule.body as JSONSchemaType<unknown>)) continue
-
+            if (!matchSchema(params.body, rule.body as JSONSchemaType<unknown>)) continue
             return true
         }
 
@@ -565,25 +570,15 @@ export class ExecutionEngine {
         this.context.execution = Object.fromEntries(this.context.actions.map((_, index) => [`${index}`, createExecutionMeta()]))
     }
 
-    // syncExecutionWithNewActions() {
-    //     const executionRecordLength = Object.entries(this.context.execution).length
-
-    //     if (executionRecordLength === this.context.actions.length) return
-
-    //     // for (let i = 0; i === this.context.actions.length - 1; i++) {
-    //     for (let i = executionRecordLength; i < this.context.actions.length; i++) {
-    //         // if (i < executionRecordLength - 1) continue
-    //         this.context.execution[`${i}`] = createExecutionMeta()
-    //     }
-    // }
-
     async executeSession() {
         if (Object.entries(this.context.execution).some(([_, value]) => value.status !== 'idle'))
             throw new Error('Cannot re-execute the running session')
         const browser = await chromium.launchPersistentContext(this.context.config.userDataDir, this.context.config.launch)
-        this.context.playwright = new PlaywrightWorker(browser)
+        this.context.playwright = new PlaywrightWorker(browser, this.context.config)
 
-        // this.context.actions.forEach((_, index) => this.runAction(index))
+        for (let i = 0; i < this.context.actions.length; i++) {
+            await this.runAction(i)
+        }
     }
 
     async runAction(index: number) {
@@ -612,6 +607,7 @@ export class BotOrchestrator {
     createContext(initialContext: Environment = {}, config: RuntimeConfig, actions: Action[], sessionId: string) {
         if (this.contexts.has(sessionId)) throw new Error('Cannot spawn a duplicate session')
         const context = new CreateContext(initialContext, config, actions)
+        this.contexts.set(sessionId, context)
         return context
     }
 
@@ -622,15 +618,6 @@ export class BotOrchestrator {
 
         return context
     }
-
-    // concatActions(actions: Action[], sessionId: string) {
-    //     const context = this.getSessionContext(sessionId)
-
-    //     if (!context) throw new Error('Could not find the session')
-
-    //     // context.actions.concat(actions)
-    //     context.actions.push(...actions)
-    // }
 
     async closeSession(sessionId: string) {
         const context = this.getSessionContext(sessionId)
@@ -652,7 +639,7 @@ export class BotOrchestrator {
         if (!context) throw new Error('Could not find the session')
         if (Object.entries(context.execution).some(([_, value]) => value.status !== 'idle')) throw new Error('Cannot re-execute the running session')
         const browser = await chromium.launchPersistentContext(context.config.userDataDir, context.config.launch)
-        context.playwright = new PlaywrightWorker(browser)
+        context.playwright = new PlaywrightWorker(browser, context.config)
 
         browser.on('close', async () => {
             try {

@@ -1,0 +1,251 @@
+{
+    "id": "1778849409863",
+    "name": "wow",
+    "description": "Parallel YouTube + Figgolabs in one browser",
+    "createdAt": "2026-05-15",
+    "thumbnail": "",
+    "graph": {
+        "nodes": [
+            {
+                "id": "d492e3d9-ec10-4f11-897e-86e7bc7d5c75",
+                "type": "browserAction",
+                "data": {
+                    "name": "launchBrowser",
+                    "config": {
+                        "userDataDir": "/path/to/user-data",
+                        "launch": {
+                            "headless": false,
+                            "channel": "chrome",
+                            "args": ["--no-sandbox"],
+                            "ignoreDefaultArgs": false,
+                            "devtools": false,
+                            "slowMo": 50,
+                            "timeout": 30000,
+                            "ignoreHTTPSErrors": false,
+                            "bypassCSP": false,
+                            "acceptDownloads": true,
+                            "downloadsPath": "./downloads",
+                            "locale": "en-US",
+                            "timezoneId": "America/New_York",
+                            "viewport": { "width": 1280, "height": 720 },
+                            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                            "javaScriptEnabled": true,
+                            "serviceWorkers": "allow",
+                            "strictSelectors": true
+                        },
+                        "execution": {
+                            "blockUserInput": false,
+                            "humanInLoopOnError": true,
+                            "maxRetries": 3,
+                            "actionTimeout": 30000,
+                            "navigationTimeout": 60000
+                        }
+                    }
+                },
+                "position": { "x": 0, "y": -360 },
+                "width": 280,
+                "height": 136
+            },
+            {
+                "id": "392a4fe4-b212-410c-867f-e423b7af340b",
+                "type": "playwrightAction",
+                "data": {
+                    "name": "openPage",
+                    "url": "about:blank",
+                    "signals": [],
+                    "pageGuid": "page@youtube-wow",
+                    "pageAlias": "youtube",
+                    "framePath": []
+                },
+                "position": { "x": 200, "y": -140 },
+                "width": 260,
+                "height": 100
+            },
+            {
+                "id": "e02be51b-abd6-40ae-b344-d68243d3fc04",
+                "type": "playwrightAction",
+                "data": {
+                    "name": "navigate",
+                    "url": "https://www.youtube.com/",
+                    "signals": [],
+                    "pageGuid": "page@youtube-wow",
+                    "pageAlias": "youtube",
+                    "framePath": []
+                },
+                "position": { "x": 200, "y": 40 },
+                "width": 260,
+                "height": 100
+            },
+            {
+                "id": "7b1a1dd9-0100-46d5-aec3-bd5b1e4e92b4",
+                "type": "playwrightAction",
+                "data": {
+                    "name": "click",
+                    "selector": "internal:role=link[name=\"Shorts\"i]",
+                    "signals": [],
+                    "button": "left",
+                    "modifiers": 0,
+                    "clickCount": 1,
+                    "preconditionSelector": "internal:role=button[name=\"Guide\"i]",
+                    "pageGuid": "page@youtube-wow",
+                    "pageAlias": "youtube",
+                    "framePath": []
+                },
+                "position": { "x": 200, "y": 300 },
+                "width": 260,
+                "height": 100
+            },
+            {
+                "id": "a4dbae4a-e4c3-49ff-8538-c5263f10eaf3",
+                "type": "playwrightAction",
+                "data": {
+                    "name": "click",
+                    "selector": "internal:role=button[name=\"Next video\"i]",
+                    "signals": [],
+                    "button": "left",
+                    "modifiers": 0,
+                    "clickCount": 1,
+                    "preconditionSelector": "internal:role=button[name=\"Mute\"i]",
+                    "pageGuid": "page@youtube-wow",
+                    "pageAlias": "youtube",
+                    "framePath": []
+                },
+                "position": { "x": 200, "y": 560 },
+                "width": 260,
+                "height": 100
+            },
+            {
+                "id": "e94ddd89-2d18-40e7-970d-83b4aa6eab9f",
+                "type": "playwrightAction",
+                "data": {
+                    "name": "closePage",
+                    "signals": [],
+                    "pageGuid": "page@youtube-wow",
+                    "pageAlias": "youtube",
+                    "framePath": []
+                },
+                "position": { "x": 200, "y": 820 },
+                "width": 260,
+                "height": 100
+            },
+            {
+                "id": "d6760afa-52dd-4c8c-9351-59315e9522e7",
+                "type": "playwrightAction",
+                "data": {
+                    "name": "openPage",
+                    "url": "https://figgolabs.com",
+                    "signals": [],
+                    "pageGuid": "page@figgolabs-wow",
+                    "pageAlias": "figgolabs",
+                    "framePath": []
+                },
+                "position": { "x": -280, "y": -60 },
+                "width": 260,
+                "height": 100
+            },
+            {
+                "id": "f60b8d50-63a1-40f4-9b00-80af17a525d3",
+                "type": "playwrightAction",
+                "data": {
+                    "name": "navigate",
+                    "url": "https://figgolabs.com/404",
+                    "signals": [],
+                    "pageGuid": "page@figgolabs-wow",
+                    "pageAlias": "figgolabs",
+                    "framePath": []
+                },
+                "position": { "x": -280, "y": 220 },
+                "width": 260,
+                "height": 100
+            },
+            {
+                "id": "b5cd6ee8-ec55-4d56-957e-be21823eda7f",
+                "type": "playwrightAction",
+                "data": {
+                    "name": "closePage",
+                    "signals": [],
+                    "pageGuid": "page@figgolabs-wow",
+                    "pageAlias": "figgolabs",
+                    "framePath": []
+                },
+                "position": { "x": -280, "y": 540 },
+                "width": 260,
+                "height": 100
+            },
+            {
+                "id": "b8de7ab6-a8d9-4fd8-9ac5-967e0fda6db6",
+                "type": "browserAction",
+                "data": {
+                    "name": "closeBrowser"
+                },
+                "position": { "x": 0, "y": 1100 },
+                "width": 280,
+                "height": 144
+            }
+        ],
+        "edges": [
+            {
+                "id": "launch-youtube",
+                "source": "d492e3d9-ec10-4f11-897e-86e7bc7d5c75",
+                "target": "392a4fe4-b212-410c-867f-e423b7af340b",
+                "type": "customEdge"
+            },
+            {
+                "id": "launch-figgolabs",
+                "source": "d492e3d9-ec10-4f11-897e-86e7bc7d5c75",
+                "target": "d6760afa-52dd-4c8c-9351-59315e9522e7",
+                "type": "customEdge"
+            },
+            {
+                "id": "yt-open-nav",
+                "source": "392a4fe4-b212-410c-867f-e423b7af340b",
+                "target": "e02be51b-abd6-40ae-b344-d68243d3fc04",
+                "type": "customEdge"
+            },
+            {
+                "id": "yt-nav-shorts",
+                "source": "e02be51b-abd6-40ae-b344-d68243d3fc04",
+                "target": "7b1a1dd9-0100-46d5-aec3-bd5b1e4e92b4",
+                "type": "customEdge"
+            },
+            {
+                "id": "yt-shorts-next",
+                "source": "7b1a1dd9-0100-46d5-aec3-bd5b1e4e92b4",
+                "target": "a4dbae4a-e4c3-49ff-8538-c5263f10eaf3",
+                "type": "customEdge"
+            },
+            {
+                "id": "yt-next-close",
+                "source": "a4dbae4a-e4c3-49ff-8538-c5263f10eaf3",
+                "target": "e94ddd89-2d18-40e7-970d-83b4aa6eab9f",
+                "type": "customEdge"
+            },
+            {
+                "id": "fig-open-nav",
+                "source": "d6760afa-52dd-4c8c-9351-59315e9522e7",
+                "target": "f60b8d50-63a1-40f4-9b00-80af17a525d3",
+                "type": "customEdge"
+            },
+            {
+                "id": "fig-nav-close",
+                "source": "f60b8d50-63a1-40f4-9b00-80af17a525d3",
+                "target": "b5cd6ee8-ec55-4d56-957e-be21823eda7f",
+                "type": "customEdge"
+            },
+            {
+                "id": "yt-close-browser",
+                "source": "e94ddd89-2d18-40e7-970d-83b4aa6eab9f",
+                "target": "b8de7ab6-a8d9-4fd8-9ac5-967e0fda6db6",
+                "type": "customEdge"
+            },
+            {
+                "id": "fig-close-browser",
+                "source": "b5cd6ee8-ec55-4d56-957e-be21823eda7f",
+                "target": "b8de7ab6-a8d9-4fd8-9ac5-967e0fda6db6",
+                "type": "customEdge"
+            }
+        ]
+    },
+    "exportDate": "2026-05-15T14:00:00.000Z",
+    "version": "1.0"
+}
