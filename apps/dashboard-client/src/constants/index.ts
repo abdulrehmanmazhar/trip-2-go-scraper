@@ -29,7 +29,8 @@ export const APIS = {
     BOT_UNREVOKE: '/unrevoke-bot',
     COUNTRIES: '/countries',
     WORKFLOWS: '/workflows',
-    WORKFLOWS_IMPORT: '/workflows/import'
+    WORKFLOWS_IMPORT: '/workflows/import',
+    WORKFLOW_TESTS: '/workflow-tests'
 }
 
 export const ROUTES = {
@@ -60,6 +61,7 @@ export const ROUTES = {
         BOTS: '/admin/bots',
         WORKFLOWS: '/admin/workflows',
         WORKFLOW_BUILDER: '/admin/workflow-builder',
+        WORKFLOW_TEST: '/admin/workflow-test',
         CLIENTS: '/admin/clients',
         CLIENT_DATA: '/admin/client-data',
         PROFILE: '/admin/profile',

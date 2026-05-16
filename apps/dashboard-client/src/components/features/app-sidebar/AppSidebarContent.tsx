@@ -21,7 +21,8 @@ import {
     Bug,
     Fingerprint,
     Radar,
-    Info
+    Info,
+    FlaskConical
 } from 'lucide-react'
 
 import {
@@ -114,6 +115,15 @@ export function AppSidebarContent() {
                                 <SidebarMenuButton>
                                     <Wand2 />
                                     <span>Workflow Builder</span>
+                                </SidebarMenuButton>
+                            </Link>
+                        </SidebarMenuItem>
+
+                        <SidebarMenuItem>
+                            <Link to={ROUTES.ADMIN.WORKFLOW_TEST}>
+                                <SidebarMenuButton>
+                                    <FlaskConical />
+                                    <span>Test workflow</span>
                                 </SidebarMenuButton>
                             </Link>
                         </SidebarMenuItem>

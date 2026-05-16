@@ -9,6 +9,7 @@ import LiveActivity from '@/pages/LiveActivity'
 import NotFound from '@/pages/NotFound'
 import Profile from '@/pages/Profile'
 import WorkflowBuilder from '@/pages/WorkflowBuilder'
+import WorkflowTest from '@/pages/WorkflowTest'
 import Workflows from '@/pages/Workflows'
 import { Route, Routes } from 'react-router-dom'
 
@@ -40,6 +41,10 @@ function AdminAppRouter({}: Props) {
             <Route
                 path="/workflow-builder"
                 element={<WorkflowBuilder />}
+            />
+            <Route
+                path="/workflow-test"
+                element={<WorkflowTest />}
             />
             <Route
                 path="/clients"

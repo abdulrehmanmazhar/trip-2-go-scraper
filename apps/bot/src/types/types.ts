@@ -1,4 +1,4 @@
-import { disconnect } from 'node:cluster'
+import type { WorkflowFile } from './workflow.js'
 
 export type ActionName =
     | 'check'
@@ -204,7 +204,17 @@ export type InturrptionAction = {
     }
 }
 
-type RunTask = { handler: 'runTask'; payload: { task: string } }
+export type RunTaskPayload = {
+    sessionId: string
+    workflow: WorkflowFile
+    taskId?: string
+    environment?: Record<string, unknown>
+    metadata?: Record<string, unknown>
+    /** When true, the handler awaits workflow completion before responding. Default: false. */
+    waitForCompletion?: boolean
+}
+
+type RunTask = { handler: 'runTask'; payload: RunTaskPayload }
 type disconnect = { handler: 'disconnect'; payload: null }
 
 export type BotCommand = RunTask | disconnect

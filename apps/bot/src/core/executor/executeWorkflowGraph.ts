@@ -1,6 +1,6 @@
-import type { WorkflowGraph } from '../types/workflow.js'
-import { buildWorkflowGraphIndex } from './buildWorkflowGraph.js'
-import logger from './logger.js'
+import type { WorkflowGraph } from '../../types/workflow.js'
+import { buildWorkflowGraphIndex } from '../parser/buildWorkflowGraph.js'
+import logger from '../../utils/logger.js'
 
 export type GraphRunCallbacks = {
     onStepStart: (nodeId: string, stepIndex: number) => void
@@ -33,7 +33,6 @@ export const executeWorkflowGraph = async (graph: WorkflowGraph, callbacks: Grap
             const preds = (parents.get(nodeId) ?? []).filter((p) => reachable.has(p))
             if (!preds.every((p) => completed.has(p))) continue
 
-            // launchBrowser must finish before anything else runs
             if (nodeId !== launchNodeId && !launchCompleted) continue
 
             ready.push(nodeId)

@@ -1,20 +1,17 @@
-import type { BotActions } from '../types/types.js'
-import type { WorkflowGraph, WorkflowGraphNode } from '../types/workflow.js'
+import type { BotActions } from '../../types/types.js'
+import type { WorkflowGraph, WorkflowGraphNode } from '../../types/workflow.js'
 
 export type WorkflowGraphIndex = {
     nodesById: Map<string, WorkflowGraphNode>
     parents: Map<string, string[]>
     children: Map<string, string[]>
-    /** Nodes on paths reachable from launchBrowser */
     reachable: Set<string>
     launchNodeId: string
-    /** Topological layers for logging (optional) */
     executionOrder: string[]
 }
 
 const needsPageGuid = (name: string) => name !== 'launchBrowser' && name !== 'closeBrowser'
 
-/** Copy pageGuid / frame metadata from an upstream openPage on the same branch. */
 export const enrichPlaywrightNodeData = (nodeId: string, index: Pick<WorkflowGraphIndex, 'nodesById' | 'parents'>): Record<string, unknown> => {
     const node = index.nodesById.get(nodeId)
     if (!node) throw new Error(`Unknown node ${nodeId}`)
@@ -93,7 +90,6 @@ export const buildWorkflowGraphIndex = (graph: WorkflowGraph): WorkflowGraphInde
     }
 }
 
-/** Kahn sort over reachable nodes — used for step index ordering in feedback only. */
 const topologicalSort = (reachable: Set<string>, parents: Map<string, string[]>, children: Map<string, string[]>) => {
     const inDegree = new Map<string, number>()
     for (const id of reachable) {

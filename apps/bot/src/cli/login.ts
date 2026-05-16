@@ -5,6 +5,7 @@ import { writeFile } from 'node:fs/promises'
 import fetch from 'node-fetch'
 import { apiVersion, appRoot, centralServerUrl, verificationLink } from '../constant/application.js'
 import { checkFile } from '../utils/path.js'
+import logger from '../utils/logger.js'
 
 export async function handleLogin() {
     const configPath = path.join(appRoot, 'bot.json')
@@ -71,14 +72,14 @@ export async function handleLogin() {
     // 🛑 Cleanup handler
     const cleanup = () => {
         stopped = true
-        process.stderr.write('\n❌ Login cancelled.')
+        logger.warn('LOGIN_CANCELLED', { meta: { message: 'Login cancelled' } })
         process.exit(1)
     }
 
     process.on('SIGINT', cleanup)
     process.on('SIGTERM', cleanup)
 
-    process.stdout.write('⏳ Waiting for login confirmation...\n')
+    logger.info('LOGIN_WAITING', { meta: { message: 'Waiting for login confirmation' } })
 
     while (!stopped && elapsed < MAX_WAIT_TIME) {
         const checkRes = await fetch(`${centralServerUrl}${apiVersion}${data.data.resolveUrl}/${data.data.botId}`)
@@ -86,11 +87,10 @@ export async function handleLogin() {
         const res = (await checkRes.json()) as { data: { status: 'pending' | 'approved' | 'rejected' } }
 
         if (checkRes.status === 200 && res.data.status === 'approved') {
-            process.stdout.write('✅ Login successful!')
-            process.stdout.write('👉 Run: figgo-bot start\n')
+            logger.info('LOGIN_SUCCESS', { meta: { message: 'Login successful. Run: figgo-bot start' } })
             process.exit(0)
         } else if (checkRes.status === 200 && res.data.status === 'rejected') {
-            process.stderr.write('❌ Login rejected by admin.')
+            logger.error('LOGIN_REJECTED', { meta: { message: 'Login rejected by admin' } })
             process.exit(1)
         }
 
@@ -98,6 +98,6 @@ export async function handleLogin() {
         elapsed += POLL_INTERVAL
     }
 
-    process.stderr.write('⏰ Login timeout. Please try again.')
+    logger.error('LOGIN_TIMEOUT', { meta: { message: 'Login timeout. Please try again.' } })
     process.exit(1)
 }

@@ -1,5 +1,5 @@
-import type { WorkflowGraph, WorkflowGraphNode } from '../types/workflow.js'
-import logger from './logger.js'
+import type { WorkflowGraph, WorkflowGraphNode } from '../../types/workflow.js'
+import logger from '../../utils/logger.js'
 
 /**
  * Walks the workflow graph from launchBrowser (or the sole source node) along edges
