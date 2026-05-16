@@ -5,10 +5,10 @@ import logger from '../utils/logger.js'
 
 const botPackageRoot = () => path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 
-export const defaultYoutubeWorkflowPath = () => path.join(botPackageRoot(), 'workflows', 'youtube_workflow.json')
+export const defaultDemoWorkflowPath = () => path.join(botPackageRoot(), 'workflows', 'demo_workflow.json')
 
 export async function handleDemo(workflowPath?: string) {
-    const resolved = workflowPath ? path.resolve(workflowPath) : defaultYoutubeWorkflowPath()
+    const resolved = workflowPath ? path.resolve(workflowPath) : defaultDemoWorkflowPath()
 
     process.stdout.write(`Workflow file: ${resolved}\n`)
 
