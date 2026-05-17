@@ -2,6 +2,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { FiggoClient } from 'ws-core'
 import { appRoot } from '../constant/application.js'
+import { buildBotWsUrl } from '../utils/wsUrl.js'
 import { shutDown } from '../handlers/shutdown.js'
 import logger from '../utils/logger.js'
 import type { BotEvents } from '../types/types.js'
@@ -28,20 +29,27 @@ export async function handleStart() {
         serverUrl: string
     }
 
-    const wsUrl = config.serverUrl.replace('http', 'ws') + '/ws'
+    const wsUrl = buildBotWsUrl(config.serverUrl)
 
     const client = new FiggoClient({
         url: wsUrl,
         botId: config.botId,
-        privateKey: config.privateKey
+        privateKey: config.privateKey,
+        connectOptions: {
+            family: 4,
+            handshakeTimeout: 30_000
+        }
     })
 
     try {
         await client.connect()
         logger.info('BOT_CONNECTED', { meta: { botId: config.botId, message: 'Bot connected to server' } })
     } catch (err) {
-        logger.error('BOT_CONNECTION_FAILED', { meta: { botId: config.botId, error: err as Error } })
-        if (err instanceof Error && err.message !== 'Unexpected server response: 404') {
+        const error = err as Error & { code?: string }
+        logger.error('BOT_CONNECTION_FAILED', {
+            meta: { botId: config.botId, error, wsUrl, serverUrl: config.serverUrl }
+        })
+        if (error instanceof Error && error.message !== 'Unexpected server response: 404') {
             process.exit(1)
         }
     }
@@ -72,6 +80,13 @@ export async function handleStart() {
 
     await new Promise<void>((resolve) => setTimeout(resolve, 2000))
 
+    try {
+        await client.request('ping', { timestamp: Date.now() })
+        logger.info('PING_SUCCESS', { meta: { message: 'Initial ping successful, bot is fully operational' } })
+    } catch (error) {
+        logger.error('PING_FAILED', { meta: { error: error as Error, message: 'Initial ping failed, there may be an issue with the connection' } })
+    }
+
     // try {
     //     const syncCountries = await fetchCountriesSyncPayload()
     //     const countrySyncResult = await client.request('updateCountryList', syncCountries)
@@ -83,7 +98,7 @@ export async function handleStart() {
     // }
 
     await runAsyncLoop(() => connectionRefresh(client), {
-        intervalMs: 1 * 60 * 1000, // ping every 1 minute
+        intervalMs: 0.125 * 60 * 1000, // ping every 1 minute
         retryDelayMs: 30 * 1000, // retry every 30 seconds on failure
         maxRetries: 10, // after 10 failed attempts, exit loop and let process crash to trigger restart
         onError: (err, attempt) => {

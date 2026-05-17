@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import type { TerminalLine, WorkflowTestStatus } from '@/utils/workflowTestApi'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { buildWorkflowTestWsUrl, type TerminalLine, type WorkflowTestStatus } from '@/utils/workflowTestApi'
 
 type StreamSnapshot = {
     testId: string
@@ -18,12 +18,13 @@ type WsMessage =
     | { type: 'line'; line: TerminalLine }
     | { type: 'status'; status: WorkflowTestStatus; testId: string; sessionId: string; endedAt?: number }
 
-export function useWorkflowTestStream(testId: string | null, wsUrl: string | null) {
+export function useWorkflowTestStream(testId: string | null) {
     const [lines, setLines] = useState<TerminalLine[]>([])
     const [status, setStatus] = useState<WorkflowTestStatus | 'idle'>('idle')
     const [connected, setConnected] = useState(false)
     const [sessionId, setSessionId] = useState<string | null>(null)
     const wsRef = useRef<WebSocket | null>(null)
+    const wsUrl = useMemo(() => (testId ? buildWorkflowTestWsUrl(testId) : null), [testId])
 
     const appendLine = useCallback((line: TerminalLine) => {
         setLines((prev) => {
@@ -43,6 +44,10 @@ export function useWorkflowTestStream(testId: string | null, wsUrl: string | nul
             setConnected(false)
             return
         }
+
+        setLines([])
+        setStatus('idle')
+        setSessionId(null)
 
         const ws = new WebSocket(wsUrl)
         wsRef.current = ws
@@ -83,7 +88,17 @@ export function useWorkflowTestStream(testId: string | null, wsUrl: string | nul
             }
         }
 
-        ws.onclose = () => setConnected(false)
+        ws.onclose = (event) => {
+            setConnected(false)
+            if (event.code === 4004) {
+                appendLine({
+                    id: `ws-close-${event.code}`,
+                    ts: Date.now(),
+                    level: 'error',
+                    text: 'Test run not found on server. Start a new test.'
+                })
+            }
+        }
 
         ws.onerror = () => setConnected(false)
 

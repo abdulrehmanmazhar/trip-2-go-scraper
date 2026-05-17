@@ -1,21 +1,13 @@
-import type { Server } from 'node:http'
-import { FiggoServer } from 'ws-core'
-import { getBotPublicKey, registerHandlers } from '../util/bot.js'
+import type { FiggoServer } from 'ws-core'
+import { createBotSocket } from '../ws/bot-socket.js'
+import { registerHandlers } from '../util/bot.js'
 
-export let botService: ReturnType<typeof createFiggoServer>
+export let botService: FiggoServer
 
-export function createFiggoServer(server: Server) {
-    const figgo = new FiggoServer({
-        server,
-        path: '/ws',
-        getPublicKey: async (botId: string) => {
-            return getBotPublicKey(botId)
-        }
-    })
-
+/** Creates the Figgo bot server and registers RPC handlers. Called from {@link attachWebSockets}. */
+export function initBotService(): FiggoServer {
+    const figgo = createBotSocket()
     botService = figgo
-
     registerHandlers(figgo)
-
     return figgo
 }

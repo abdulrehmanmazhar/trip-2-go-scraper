@@ -2,6 +2,14 @@ import constants, { APIS } from '@/constants'
 
 const apiRoot = `${constants.BACKEND_LINK}${constants.API_VERSION}`
 
+/** Must match dashboard-backend `WORKFLOW_TEST_WS_PATH`. */
+export const WORKFLOW_TEST_WS_PATH = '/ws/workflow-test'
+
+export function buildWorkflowTestWsUrl(testId: string): string {
+    const wsBase = constants.BACKEND_LINK.replace(/^http/, 'ws')
+    return `${wsBase}${WORKFLOW_TEST_WS_PATH}?testId=${encodeURIComponent(testId)}`
+}
+
 export type WorkflowTestStatus = 'running' | 'completed' | 'failed'
 
 export type TerminalLine = {
@@ -19,7 +27,6 @@ export type StartWorkflowTestResult = {
     workflowId: string
     workflowName: string
     status: WorkflowTestStatus
-    wsUrl: string
 }
 
 export type WorkflowTestInfo = StartWorkflowTestResult & {

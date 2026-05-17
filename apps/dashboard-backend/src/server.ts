@@ -1,15 +1,13 @@
 import app from './app.js'
 import config from './config/config.js'
 import databaseService from './service/databaseService.js'
-import { createFiggoServer } from './service/botService.js'
-import { attachWorkflowTestStream } from './service/workflowTestStream.js'
+import { attachWebSockets } from './ws/index.js'
 import logger from './util/logger.js'
 import { ensureWorkflowsBucket, minioClient } from './service/storageService.js'
 
 const server = app.listen(config.PORT)
 
-createFiggoServer(server)
-attachWorkflowTestStream(server)
+attachWebSockets(server)
 
 const main = async () => {
     try {

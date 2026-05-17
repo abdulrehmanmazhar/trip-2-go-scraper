@@ -1,7 +1,9 @@
 import { randomBytes, randomUUID } from 'node:crypto'
 import type { IncomingMessage } from 'node:http'
 import type { Server as HttpServer } from 'node:http'
+import type { Duplex } from 'node:stream'
 import WebSocket, { WebSocketServer, type RawData } from 'ws'
+import { matchesUpgradePath } from '../http/upgrade-path.js'
 import { verifyMessage } from '../protocol/verifier.js'
 import { isTimestampValid, NonceStore } from '../protocol/nonce.js'
 import { RequestManager } from '../runtime/request-manager.js'
@@ -14,9 +16,15 @@ import { BotConnectionManager } from './connection-manager.js'
 export const HEARTBEAT_DEAD_MS = 45_000
 
 export type FiggoServerOptions = {
-    server: HttpServer
     path?: string
     getPublicKey: (botId: string) => Promise<string>
+    /** Attach directly to this HTTP server (single WebSocket path). */
+    server?: HttpServer
+    /**
+     * Do not register an `upgrade` listener. Use with a shared HTTP upgrade router and
+     * call {@link matchesUpgrade} / {@link handleUpgrade} per connection.
+     */
+    noServer?: boolean
 }
 
 type HandshakePayload = {
@@ -43,7 +51,17 @@ export class FiggoServer {
 
     constructor(options: FiggoServerOptions) {
         this.getPublicKey = options.getPublicKey
-        this.wss = new WebSocketServer({ server: options.server, path: options.path ?? '/' })
+
+        if (options.noServer && options.server) {
+            throw new Error('FiggoServer: use either `server` or `noServer: true`, not both')
+        }
+        if (!options.noServer && !options.server) {
+            throw new Error('FiggoServer: `server` is required unless `noServer: true`')
+        }
+
+        const path = options.path ?? '/'
+        this.wss = options.noServer ? new WebSocketServer({ noServer: true, path }) : new WebSocketServer({ server: options.server, path })
+
         this.wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
             this.onConnection(ws, req)
         })
@@ -61,6 +79,17 @@ export class FiggoServer {
 
     handle(type: string, handler: (payload: unknown) => unknown | Promise<unknown>): void {
         this.router.handle(type, handler)
+    }
+
+    matchesUpgrade(req: IncomingMessage): boolean {
+        const path = this.wss.options.path
+        return path ? matchesUpgradePath(req, path) : true
+    }
+
+    handleUpgrade(req: IncomingMessage, socket: Duplex, head: Buffer): void {
+        this.wss.handleUpgrade(req, socket, head, (ws) => {
+            this.wss.emit('connection', ws, req)
+        })
     }
 
     send(botId: string, type: string, payload?: unknown): void {

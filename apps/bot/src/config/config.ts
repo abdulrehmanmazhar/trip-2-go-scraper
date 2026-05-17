@@ -1,7 +1,3 @@
-import dotenvFlow from 'dotenv-flow'
-
-dotenvFlow.config()
-
 export default {
-    ENV: process.env.ENV
+    ENV: process.env.ENV || 'development'
 } as { ENV: 'production' | 'development' }

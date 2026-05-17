@@ -1,5 +1,5 @@
 import { randomBytes, randomUUID } from 'node:crypto'
-import WebSocket, { type RawData } from 'ws'
+import WebSocket, { type ClientOptions, type RawData } from 'ws'
 import { signMessage } from '../protocol/signer.js'
 import { verifyMessage } from '../protocol/verifier.js'
 import { isTimestampValid, NonceStore } from '../protocol/nonce.js'
@@ -19,6 +19,8 @@ export type FiggoClientOptions = {
      * SPKI PEM for verifying server-signed frames. When omitted, frames with a non-empty signature are not verified.
      */
     serverPublicKey?: string
+    /** Passed to the underlying `ws` client (e.g. `{ family: 4 }` to prefer IPv4). */
+    connectOptions?: ClientOptions
 }
 
 export class FiggoClient {
@@ -26,6 +28,7 @@ export class FiggoClient {
     private readonly botId: string
     private readonly privateKey: string
     private readonly serverPublicKey: string | undefined
+    private readonly connectOptions: ClientOptions | undefined
     private ws: WebSocket | null = null
     private readonly router = new MessageRouter()
     private readonly requests = new RequestManager()
@@ -37,6 +40,7 @@ export class FiggoClient {
         this.botId = options.botId
         this.privateKey = options.privateKey
         this.serverPublicKey = options.serverPublicKey
+        this.connectOptions = options.connectOptions
     }
 
     async connect(): Promise<void> {
@@ -45,7 +49,7 @@ export class FiggoClient {
         }
 
         await new Promise<void>((resolve, reject) => {
-            const ws = new WebSocket(this.url)
+            const ws = new WebSocket(this.url, this.connectOptions)
             this.ws = ws
 
             const onOpen = (): void => {

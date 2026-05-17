@@ -9,8 +9,6 @@ import { workflowTestHub } from '../service/workflowTestHub.js'
 import httpError from '../util/httpError.js'
 import httpResponse from '../util/httpResponse.js'
 import responseMessage from '../constant/responseMessage.js'
-import config from '../config/config.js'
-import { WORKFLOW_TEST_WS_PATH } from '../service/workflowTestStream.js'
 
 function isRecord(v: unknown): v is Record<string, unknown> {
     return typeof v === 'object' && v !== null && !Array.isArray(v)
@@ -93,15 +91,12 @@ export default {
         const sessionId = `test-${testId}`
 
         const run = workflowTestHub.create({
+            testId,
+            sessionId,
             botId,
             workflowId,
-            workflowName,
-            sessionId
+            workflowName
         })
-
-        const serverUrl = config.SERVER_URL ?? `http://localhost:${config.PORT ?? '5000'}`
-        const wsBase = serverUrl.replace(/^http/, 'ws')
-        const wsUrl = `${wsBase}${WORKFLOW_TEST_WS_PATH}?testId=${encodeURIComponent(testId)}`
 
         void botService
             .request(botId, 'runTask', {
@@ -119,13 +114,12 @@ export default {
             })
 
         return httpResponse(req, res, 202, responseMessage.SUCCESS, {
-            testId,
-            sessionId,
+            testId: run.testId,
+            sessionId: run.sessionId,
             botId,
             workflowId,
             workflowName,
-            status: run.status,
-            wsUrl
+            status: run.status
         })
     },
 
@@ -140,10 +134,6 @@ export default {
             return httpError(next, new Error('Test run not found'), req, 404)
         }
 
-        const serverUrl = config.SERVER_URL ?? `http://localhost:${config.PORT ?? '5000'}`
-        const wsBase = serverUrl.replace(/^http/, 'ws')
-        const wsUrl = `${wsBase}${WORKFLOW_TEST_WS_PATH}?testId=${encodeURIComponent(testId)}`
-
         return httpResponse(req, res, 200, responseMessage.SUCCESS, {
             testId: run.testId,
             sessionId: run.sessionId,
@@ -153,8 +143,7 @@ export default {
             status: run.status,
             startedAt: run.startedAt,
             endedAt: run.endedAt,
-            lineCount: run.lines.length,
-            wsUrl
+            lineCount: run.lines.length
         })
     },
 

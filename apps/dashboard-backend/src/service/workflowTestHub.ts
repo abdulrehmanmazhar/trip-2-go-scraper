@@ -63,9 +63,8 @@ const broadcastStatus = (run: WorkflowTestRun) => {
 }
 
 export const workflowTestHub = {
-    create(params: { botId: string; workflowId: string; workflowName: string; sessionId?: string }): WorkflowTestRun {
-        const testId = randomUUID()
-        const sessionId = params.sessionId ?? `test-${testId}`
+    create(params: { testId: string; botId: string; workflowId: string; workflowName: string; sessionId: string }): WorkflowTestRun {
+        const { testId, sessionId } = params
         const run: WorkflowTestRun = {
             testId,
             sessionId,

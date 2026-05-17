@@ -26,7 +26,7 @@ export default function WorkflowTest() {
     const [starting, setStarting] = useState(false)
     const [activeTest, setActiveTest] = useState<StartWorkflowTestResult | null>(null)
 
-    const { lines, status, connected, sessionId } = useWorkflowTestStream(activeTest?.testId ?? null, activeTest?.wsUrl ?? null)
+    const { lines, status, connected, sessionId } = useWorkflowTestStream(activeTest?.testId ?? null)
 
     const eligibleBots = useMemo(() => bots.filter((b) => b.status === 'approved' && !b.isRevoked && b.isOtpVerified), [bots])
 
@@ -55,8 +55,7 @@ export default function WorkflowTest() {
                 botId: info.botId,
                 workflowId: info.workflowId,
                 workflowName: info.workflowName,
-                status: info.status,
-                wsUrl: info.wsUrl
+                status: info.status
             })
             setWorkflowId(info.workflowId)
             setBotId(info.botId)

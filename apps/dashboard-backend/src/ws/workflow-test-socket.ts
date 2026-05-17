@@ -1,12 +1,10 @@
-import type { Server } from 'node:http'
 import { WebSocketServer, type WebSocket } from 'ws'
-import { workflowTestHub } from './workflowTestHub.js'
+import { workflowTestHub } from '../service/workflowTestHub.js'
 import logger from '../util/logger.js'
+import { WORKFLOW_TEST_WS_PATH } from './paths.js'
 
-export const WORKFLOW_TEST_WS_PATH = '/ws/workflow-test'
-
-export function attachWorkflowTestStream(server: Server): WebSocketServer {
-    const wss = new WebSocketServer({ server, path: WORKFLOW_TEST_WS_PATH })
+export function createWorkflowTestSocket(): WebSocketServer {
+    const wss = new WebSocketServer({ noServer: true, path: WORKFLOW_TEST_WS_PATH })
 
     wss.on('connection', (ws, req) => {
         const url = new URL(req.url ?? '', 'http://localhost')
@@ -38,7 +36,7 @@ export function attachWorkflowTestStream(server: Server): WebSocketServer {
     return wss
 }
 
-export function closeWorkflowTestStream(wss: WebSocketServer): void {
+export function closeWorkflowTestSocket(wss: WebSocketServer): void {
     wss.clients.forEach((client: WebSocket) => client.close())
     wss.close()
 }

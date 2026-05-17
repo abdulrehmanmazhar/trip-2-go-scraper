@@ -46,6 +46,8 @@ export type { FiggoClientOptions } from './transport/client.js'
 export { FiggoServer, HEARTBEAT_DEAD_MS } from './transport/server.js'
 export type { FiggoServerOptions } from './transport/server.js'
 
+export { getUpgradePathname, matchesUpgradePath } from './http/upgrade-path.js'
+
 export { BotConnectionManager } from './transport/connection-manager.js'
 
 export { signMessage } from './protocol/signer.js'
