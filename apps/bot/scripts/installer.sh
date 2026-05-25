@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Install the extracted bot tree globally: copy to a fixed prefix and symlink figgo-bot into PATH.
-# Run from the bot root (recommended):   bash scripts/installer.sh
-# Or:                                      bash path/to/bot/scripts/installer.sh
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SOURCE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
@@ -12,31 +8,17 @@ DEFAULT_SYSTEM_PREFIX="/opt/figgo-bot"
 USER_PREFIX="${XDG_DATA_HOME:-$HOME/.local/share}/figgo-bot"
 
 usage() {
-    echo "Usage: sudo bash scripts/installer.sh           # install to $DEFAULT_SYSTEM_PREFIX + /usr/local/bin/figgo-bot"
-    echo "       bash scripts/installer.sh --user        # install to $USER_PREFIX + ~/.local/bin/figgo-bot"
-    echo "Env:   FIGGO_BOT_PREFIX=/custom/path           # override install directory"
+    echo "Usage: bash scripts/installer.sh [--user | --system]"
+    echo "Env:  FIGGO_BOT_PREFIX=/path"
 }
 
 INSTALL_MODE="auto"
 while [[ $# -gt 0 ]]; do
     case "$1" in
-    --user)
-        INSTALL_MODE="user"
-        shift
-        ;;
-    --system)
-        INSTALL_MODE="system"
-        shift
-        ;;
-    -h | --help)
-        usage
-        exit 0
-        ;;
-    *)
-        echo "Unknown option: $1" >&2
-        usage >&2
-        exit 1
-        ;;
+    --user) INSTALL_MODE="user"; shift ;;
+    --system) INSTALL_MODE="system"; shift ;;
+    -h | --help) usage; exit 0 ;;
+    *) echo "Unknown option: $1" >&2; usage >&2; exit 1 ;;
     esac
 done
 
@@ -47,52 +29,36 @@ elif [[ "$INSTALL_MODE" == "user" ]]; then
 elif [[ "$INSTALL_MODE" == "system" ]]; then
     DEST="$DEFAULT_SYSTEM_PREFIX"
 else
-    # auto: system prefix if root, else user
-    if [[ "$(id -u)" -eq 0 ]]; then
-        DEST="$DEFAULT_SYSTEM_PREFIX"
-    else
-        DEST="$USER_PREFIX"
-    fi
+    if [[ "$(id -u)" -eq 0 ]]; then DEST="$DEFAULT_SYSTEM_PREFIX"; else DEST="$USER_PREFIX"; fi
 fi
 
-if [[ ! -f "$SOURCE_ROOT/package.json" ]]; then
-    echo "installer: expected package.json under $SOURCE_ROOT" >&2
-    exit 1
-fi
+[[ -f "$SOURCE_ROOT/package.json" ]] || { echo "installer: missing package.json" >&2; exit 1; }
+[[ -f "$SOURCE_ROOT/dist/index.js" ]] || { echo "installer: run npm run dist first" >&2; exit 1; }
 
-if [[ ! -f "$SOURCE_ROOT/dist/index.js" ]]; then
-    echo "installer: missing dist/index.js — run 'npm run dist' in the bot folder before installing." >&2
-    exit 1
-fi
+PKG_VERSION="$(node -p "require('./package.json').version" 2>/dev/null || echo "0.0.0")"
+VERSION_DIR="$DEST/versions/$PKG_VERSION"
 
-BIN_LINK_NAME="figgo-bot"
-# Root system installs use /usr/local/bin; user installs use ~/.local/bin (works for non-root and sudo … --user).
-if [[ "$(id -u)" -eq 0 ]] && [[ "$INSTALL_MODE" != "user" ]]; then
-    BIN_DIR="/usr/local/bin"
-else
-    BIN_DIR="${HOME}/.local/bin"
-fi
+echo "Installing Figgo Bot $PKG_VERSION to $DEST"
 
-mkdir -p "$DEST"
-echo "Copying $SOURCE_ROOT → $DEST"
-# Preserve permissions (bundled node binaries must stay executable)
-cp -a "$SOURCE_ROOT"/. "$DEST"/
+mkdir -p "$DEST/current" "$DEST/versions" "$DEST/shared/logs" "$DEST/shared/cache" "$DEST/shared/sessions"
+mkdir -p "$DEST/shared/temp/updates" "$DEST/shared/temp/staging" "$VERSION_DIR"
 
-chmod +x "$DEST/scripts/figgo-bot.sh" 2>/dev/null || true
-[[ -f "$DEST/runtime/linux/node/bin/node" ]] && chmod +x "$DEST/runtime/linux/node/bin/node" || true
-[[ -f "$DEST/runtime/linux/node/bin/npm" ]] && chmod +x "$DEST/runtime/linux/node/bin/npm" || true
+for item in dist node_modules runtime workflows package.json tsconfig.json scripts updater; do
+    [[ -e "$SOURCE_ROOT/$item" ]] || continue
+    cp -a "$SOURCE_ROOT/$item" "$VERSION_DIR/"
+done
 
+echo "$PKG_VERSION" >"$DEST/current/version.txt"
+ln -sfn "$VERSION_DIR" "$DEST/current/app" 2>/dev/null || true
+
+BIN_DIR="$HOME/.local/bin"
+[[ "$(id -u)" -eq 0 && "$INSTALL_MODE" != "user" ]] && BIN_DIR="/usr/local/bin"
 mkdir -p "$BIN_DIR"
-LINK_PATH="$BIN_DIR/$BIN_LINK_NAME"
-TARGET_SH="$DEST/scripts/figgo-bot.sh"
+LAUNCHER="$DEST/current/app/scripts/figgo-bot.sh"
+chmod +x "$LAUNCHER" 2>/dev/null || true
+[[ -f "$VERSION_DIR/runtime/linux/node/bin/node" ]] && chmod +x "$VERSION_DIR/runtime/linux/node/bin/node" || true
+[[ -f "$VERSION_DIR/runtime/linux/node/bin/npm" ]] && chmod +x "$VERSION_DIR/runtime/linux/node/bin/npm" || true
+ln -sfn "$LAUNCHER" "$BIN_DIR/figgo-bot"
 
-if [[ -L "$LINK_PATH" ]] || [[ ! -e "$LINK_PATH" ]]; then
-    ln -sfn "$TARGET_SH" "$LINK_PATH"
-    echo "Linked $LINK_PATH → $TARGET_SH"
-else
-    echo "installer: $LINK_PATH exists and is not a symlink; remove it or pick another BIN dir." >&2
-    exit 1
-fi
-
-echo "Done. Ensure '$BIN_DIR' is on your PATH (e.g. export PATH=\"\$HOME/.local/bin:\$PATH\")."
-echo "Try: $BIN_LINK_NAME --help"
+echo "Done. Active version: $PKG_VERSION"
+echo "Ensure $BIN_DIR is on PATH. Try: figgo-bot --help"
